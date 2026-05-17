@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { AnimatedLogo } from '@/components/animated-logo';
 import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
 
@@ -14,7 +15,7 @@ export function Navbar() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 font-bold text-2xl">
-            <div className="w-8 h-8 rounded bg-accent"></div>
+            <AnimatedLogo />
             <span className="text-foreground">Kimo&apos;s Gym</span>
           </Link>
 
