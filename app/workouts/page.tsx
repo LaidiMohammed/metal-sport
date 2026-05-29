@@ -2,6 +2,7 @@
 
 import { Navbar } from '@/components/navbar';
 import { Button } from '@/components/ui/button';
+import { useAuthProtected } from '@/hooks/useAuthProtected';
 import { useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 
@@ -28,6 +29,7 @@ const recentWorkouts = [
 ];
 
 export default function WorkoutsPage() {
+  useAuthProtected();
   const [userWorkouts, setUserWorkouts] = useState<typeof recentWorkouts>(recentWorkouts);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
 

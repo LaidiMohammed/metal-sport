@@ -3,18 +3,11 @@
 import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
 import { motion } from 'framer-motion';
-import { useStore } from '@/lib/store';
-import { useRouter } from 'next/navigation';
+import { useAuthProtected } from '@/hooks/useAuthProtected';
 import { Shield, Eye, Lock, AlertCircle } from 'lucide-react';
 
 export default function PrivacyPage() {
-  const user = useStore((state) => state.user);
-  const router = useRouter();
-
-  if (!user) {
-    router.push('/auth');
-    return null;
-  }
+  const { user } = useAuthProtected();
 
   const containerVariants = {
     hidden: { opacity: 0 },

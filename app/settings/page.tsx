@@ -4,11 +4,13 @@ import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
 import { motion } from 'framer-motion';
 import { useStore } from '@/lib/store';
+import { useAuthProtected } from '@/hooks/useAuthProtected';
 import { useRouter } from 'next/navigation';
 import { Settings, Lock, User, Bell, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 
 export default function SettingsPage() {
+  useAuthProtected();
   const user = useStore((state) => state.user);
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('profile');

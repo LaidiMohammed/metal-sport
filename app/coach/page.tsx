@@ -3,6 +3,7 @@
 import { Navbar } from '@/components/navbar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useAuthProtected } from '@/hooks/useAuthProtected';
 import { useState } from 'react';
 import { Send, MessageCircle } from 'lucide-react';
 
@@ -14,6 +15,7 @@ interface Message {
 }
 
 export default function CoachPage() {
+  useAuthProtected();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',

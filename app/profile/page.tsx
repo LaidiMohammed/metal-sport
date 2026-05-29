@@ -3,10 +3,12 @@
 import { Navbar } from '@/components/navbar';
 import { Button } from '@/components/ui/button';
 import { useStore } from '@/lib/store';
+import { useAuthProtected } from '@/hooks/useAuthProtected';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 export default function ProfilePage() {
+  useAuthProtected();
   const user = useStore((state) => state.user);
   const logout = useStore((state) => state.logout);
   const router = useRouter();

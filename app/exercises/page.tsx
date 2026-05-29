@@ -4,6 +4,7 @@ import { Navbar } from '@/components/navbar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Exercise3DViewer } from '@/components/exercise-3d-viewer';
+import { useAuthProtected } from '@/hooks/useAuthProtected';
 import { useState } from 'react';
 
 const exercises = [
@@ -20,6 +21,7 @@ const exercises = [
 const categories = ['All', 'Chest', 'Back', 'Legs', 'Arms', 'Shoulders'];
 
 export default function ExercisesPage() {
+  useAuthProtected();
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
   const [selectedExercise, setSelectedExercise] = useState<string | null>(null);

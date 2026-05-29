@@ -2,6 +2,7 @@
 
 import { Navbar } from '@/components/navbar';
 import { Button } from '@/components/ui/button';
+import { useAuthProtected } from '@/hooks/useAuthProtected';
 import { useState } from 'react';
 import { ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
@@ -20,6 +21,7 @@ const products = [
 const categories = ['All', 'Equipment', 'Apparel', 'Accessories', 'Recovery', 'Mats', 'Bands'];
 
 export default function ShopPage() {
+  useAuthProtected();
   const [category, setCategory] = useState('All');
   const [cart, setCart] = useState<{ id: string; name: string; price: number }[]>([]);
 

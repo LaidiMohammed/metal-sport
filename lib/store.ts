@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 export interface User {
   id: string;
@@ -33,33 +34,60 @@ export interface UserStore {
   updateCartItems: (count: number) => void;
 }
 
-export const useStore = create<UserStore>((set) => ({
-  user: null,
-  isAuthenticated: false,
-  workoutHistory: [],
-  selectedExercise: null,
-  cartItems: 0,
+export const useStore = create<UserStore>()(
+  persist(
+    (set) => ({
+      user: null,
+      isAuthenticated: false,
+      workoutHistory: [],
+      selectedExercise: null,
+      cartItems: 0,
 
-  setUser: (user) => set({
-    user,
-    isAuthenticated: !!user,
-  }),
+      setUser: (user) => {
+        // Set cookie for middleware
+        if (typeof window !== 'undefined' && user) {
+          document.cookie = `user_auth=${JSON.stringify(user)}; path=/; max-age=2592000`;
+        } else if (typeof window !== 'undefined') {
+          document.cookie = 'user_auth=; path=/; max-age=0';
+        }
+        
+        set({
+          user,
+          isAuthenticated: !!user,
+        });
+      },
 
-  logout: () => set({
-    user: null,
-    isAuthenticated: false,
-    workoutHistory: [],
-  }),
+      logout: () => {
+        if (typeof window !== 'undefined') {
+          document.cookie = 'user_auth=; path=/; max-age=0';
+        }
+        set({
+          user: null,
+          isAuthenticated: false,
+          workoutHistory: [],
+        });
+      },
 
-  addWorkoutSession: (session) => set((state) => ({
-    workoutHistory: [...state.workoutHistory, session],
-  })),
+      addWorkoutSession: (session) => set((state) => ({
+        workoutHistory: [...state.workoutHistory, session],
+      })),
 
-  setSelectedExercise: (exerciseId) => set({
-    selectedExercise: exerciseId,
-  }),
+      setSelectedExercise: (exerciseId) => set({
+        selectedExercise: exerciseId,
+      }),
 
-  updateCartItems: (count) => set({
-    cartItems: count,
-  }),
-}));
+      updateCartItems: (count) => set({
+        cartItems: count,
+      }),
+    }),
+    {
+      name: 'kimo-gym-store',
+      partialize: (state) => ({
+        user: state.user,
+        isAuthenticated: state.isAuthenticated,
+        workoutHistory: state.workoutHistory,
+        cartItems: state.cartItems,
+      }),
+    }
+  )
+);

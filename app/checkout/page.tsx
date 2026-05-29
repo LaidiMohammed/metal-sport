@@ -3,10 +3,12 @@
 import { Navbar } from '@/components/navbar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useAuthProtected } from '@/hooks/useAuthProtected';
 import { useState } from 'react';
 import { Loader } from 'lucide-react';
 
 export default function CheckoutPage() {
+  useAuthProtected();
   const [step, setStep] = useState<'cart' | 'shipping' | 'payment' | 'confirmation'>('cart');
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({

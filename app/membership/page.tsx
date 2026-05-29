@@ -2,6 +2,7 @@
 
 import { Navbar } from '@/components/navbar';
 import { Button } from '@/components/ui/button';
+import { useAuthProtected } from '@/hooks/useAuthProtected';
 import { Check } from 'lucide-react';
 import Link from 'next/link';
 
@@ -57,6 +58,7 @@ const plans = [
 ];
 
 export default function MembershipPage() {
+  useAuthProtected();
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
