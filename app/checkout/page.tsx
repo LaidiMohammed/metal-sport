@@ -4,8 +4,9 @@ import { Navbar } from '@/components/navbar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuthProtected } from '@/hooks/useAuthProtected';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Loader } from 'lucide-react';
+import { motion, useScroll, useTransform } from 'framer-motion';
 
 export default function CheckoutPage() {
   useAuthProtected();
@@ -55,19 +56,38 @@ export default function CheckoutPage() {
     }, 1500);
   };
 
+  const heroRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ['start start', 'start -0.3'],
+  });
+  const titleScale = useTransform(scrollYProgress, [0, 1], [1, 0.7]);
+  const titleOpacity = useTransform(scrollYProgress, [0, 1], [1, 0.3]);
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pt-14">
       <Navbar />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Header */}
-        <h1 className="text-4xl font-bold text-foreground mb-12">Checkout</h1>
+      {/* Hero banner */}
+      <div ref={heroRef} className="relative overflow-hidden" style={{ padding: '64px 0 56px' }}>
+        <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,180,216,0.15) 0%, rgba(0,180,216,0.06) 40%, rgba(0,180,216,0.02) 70%, transparent 100%)' }} />
+        <div className="absolute top-[-80px] right-[10%] w-[500px] h-[500px] rounded-full hidden md:block" style={{ background: 'radial-gradient(circle, rgba(0,212,170,0.1) 0%, transparent 70%)', filter: 'blur(60px)' }} />
+        <div className="absolute bottom-0 left-[10%] w-[300px] h-[300px] rounded-full" style={{ background: 'radial-gradient(circle, rgba(0,180,216,0.08) 0%, transparent 70%)', filter: 'blur(80px)' }} />
 
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <motion.div style={{ scale: titleScale, opacity: titleOpacity, transformOrigin: 'left' }}>
+            <h1 className="text-4xl font-bold text-foreground mb-2">Checkout</h1>
+          </motion.div>
+          <p className="text-foreground/60">Complete your purchase securely</p>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Progress Steps */}
-        <div className="flex items-center justify-between mb-12">
+        <div className="flex items-center justify-between mb-12 overflow-x-auto">
           {['cart', 'shipping', 'payment', 'confirmation'].map((s, index) => (
             <div key={s} className="flex items-center flex-1">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${
+              <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm ${
                 (index < ['cart', 'shipping', 'payment', 'confirmation'].indexOf(step) || s === step)
                   ? 'bg-accent text-accent-foreground'
                   : 'bg-foreground/10 text-foreground/60'

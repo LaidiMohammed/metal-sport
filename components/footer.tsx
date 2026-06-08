@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { Github, Twitter, Linkedin, Mail } from 'lucide-react';
 
 export function Footer() {
@@ -12,11 +13,27 @@ export function Footer() {
           <div className="col-span-1">
             <Link href="/" className="flex items-center gap-2 font-bold text-lg mb-4">
               <div className="w-6 h-6 rounded bg-accent"></div>
-              <span className="text-foreground">Kimo's Gym</span>
+              <span className="text-foreground">Metal Sport Gym</span>
             </Link>
             <p className="text-sm text-foreground/60">
               Advanced fitness platform with 3D visualization and AI coaching.
             </p>
+            <div className="mt-4 w-16 h-16 opacity-40">
+              <Image
+                src="/images/mascot (2).png"
+                alt="Mascot"
+                width={64}
+                height={64}
+                className="w-full h-auto"
+                style={{ animation: 'mascotFloat 7s ease-in-out infinite' }}
+              />
+            </div>
+            <style>{`
+              @keyframes mascotFloat {
+                0%,100% { transform: translateY(0) rotate(-.5deg); }
+                50%     { transform: translateY(-8px) rotate(.5deg); }
+              }
+            `}</style>
           </div>
 
           {/* Product */}

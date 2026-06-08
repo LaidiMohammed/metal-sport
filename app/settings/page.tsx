@@ -2,12 +2,12 @@
 
 import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { useStore } from '@/lib/store';
 import { useAuthProtected } from '@/hooks/useAuthProtected';
 import { useRouter } from 'next/navigation';
 import { Settings, Lock, User, Bell, ChevronRight } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 export default function SettingsPage() {
   useAuthProtected();
@@ -42,31 +42,43 @@ export default function SettingsPage() {
     visible: {
       opacity: 1,
       y: 0,
-      transition: { type: 'spring', stiffness: 300, damping: 20 },
+      transition: { type: 'spring' as const, stiffness: 300, damping: 20 },
     },
   };
 
+  const heroRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ['start start', 'start -0.3'],
+  });
+  const titleScale = useTransform(scrollYProgress, [0, 1], [1, 0.7]);
+  const titleOpacity = useTransform(scrollYProgress, [0, 1], [1, 0.3]);
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pt-14">
       <Navbar />
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Header */}
-        <motion.div
-          className="mb-12"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-3 rounded-lg bg-accent/20">
-              <Settings className="w-6 h-6 text-accent" />
-            </div>
-            <h1 className="text-4xl font-bold text-foreground">Settings</h1>
-          </div>
-          <p className="text-foreground/60">Manage your account and preferences</p>
-        </motion.div>
+      {/* Hero banner */}
+      <div ref={heroRef} className="relative overflow-hidden" style={{ padding: '64px 0 56px' }}>
+        <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,180,216,0.15) 0%, rgba(0,180,216,0.06) 40%, rgba(0,180,216,0.02) 70%, transparent 100%)' }} />
+        <div className="absolute top-[-80px] right-[10%] w-[500px] h-[500px] rounded-full hidden md:block" style={{ background: 'radial-gradient(circle, rgba(0,212,170,0.1) 0%, transparent 70%)', filter: 'blur(60px)' }} />
+        <div className="absolute bottom-0 left-[10%] w-[300px] h-[300px] rounded-full" style={{ background: 'radial-gradient(circle, rgba(0,180,216,0.08) 0%, transparent 70%)', filter: 'blur(80px)' }} />
 
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <div className="flex items-center gap-2 text-accent mb-3">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #00d4aa, #00b896)' }}>
+              <Settings className="w-4 h-4 text-black" />
+            </div>
+            <span className="text-sm font-semibold tracking-widest uppercase">Account</span>
+          </div>
+          <motion.div style={{ scale: titleScale, opacity: titleOpacity, transformOrigin: 'left' }}>
+            <h1 className="text-4xl font-bold text-foreground mb-2">Settings</h1>
+          </motion.div>
+          <p className="text-foreground/60">Manage your account and preferences</p>
+        </div>
+      </div>
+
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Tabs */}
         <motion.div
           className="flex gap-2 mb-8 bg-foreground/5 p-1 rounded-lg w-fit"

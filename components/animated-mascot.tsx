@@ -21,7 +21,7 @@ export function AnimatedMascot({ size = 'md', animated = true }: AnimatedMascotP
       transition: {
         duration: 3,
         repeat: Infinity,
-        ease: 'easeInOut',
+        ease: 'easeInOut' as const,
       },
     },
   };
@@ -32,7 +32,7 @@ export function AnimatedMascot({ size = 'md', animated = true }: AnimatedMascotP
       transition: {
         duration: 2.5,
         repeat: Infinity,
-        ease: 'easeInOut',
+        ease: 'easeInOut' as const,
       },
     },
   };
@@ -43,7 +43,7 @@ export function AnimatedMascot({ size = 'md', animated = true }: AnimatedMascotP
       transition: {
         duration: 4,
         repeat: Infinity,
-        ease: 'easeInOut',
+        ease: 'easeInOut' as const,
       },
     },
   };
@@ -77,7 +77,7 @@ export function AnimatedMascot({ size = 'md', animated = true }: AnimatedMascotP
             transition={{
               duration: 2,
               repeat: Infinity,
-              ease: 'easeInOut',
+              ease: 'easeInOut' as const,
             }}
           />
         )}
@@ -90,7 +90,7 @@ export function AnimatedMascot({ size = 'md', animated = true }: AnimatedMascotP
           className="relative z-10"
         >
           <Image
-            src="/images/kimo-mascot.jpg"
+            src="/images/mascot.png"
             alt="Kimo - Gym Mascot"
             width={currentSize.image}
             height={currentSize.image}
@@ -114,7 +114,7 @@ export function AnimatedMascot({ size = 'md', animated = true }: AnimatedMascotP
                 transition={{
                   duration: 2 + i * 0.3,
                   repeat: Infinity,
-                  ease: 'easeInOut',
+                  ease: 'easeInOut' as const,
                   delay: i * 0.3,
                 }}
                 style={{

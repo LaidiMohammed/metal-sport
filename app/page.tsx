@@ -2,53 +2,55 @@
 
 import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
-import { AnimatedMascot } from '@/components/animated-mascot';
-import { ScrollReveal } from '@/components/scroll-reveal';
-import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCube, faRobot, faDumbbell, faTrophy, faChartLine, faUsers } from '@fortawesome/free-solid-svg-icons';
-import { useEffect, useState } from 'react';
+import Image from 'next/image';
+import { useEffect, useState, useRef } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
+
+const FEATURES = [
+  { n: '01', title: '3D Exercise Library', desc: 'Full-body 3D visualization of every movement. See muscle activation and correct form in real time.' },
+  { n: '02', title: 'AI Coach', desc: 'Your AI trainer adapts programs based on performance data and progressive overload principles.' },
+  { n: '03', title: 'Custom Workouts', desc: 'Build splits, supersets, and periodization blocks. Log every rep with smart progression alerts.' },
+  { n: '04', title: 'Analytics', desc: 'Deep stats on volume, strength curves, and body composition. Track what moves the needle.' },
+  { n: '05', title: 'Premium Shop', desc: 'Curated gear, supplements, and apparel sourced for athletes who demand performance.' },
+  { n: '06', title: 'Community', desc: 'Challenges, leaderboards, and athlete profiles. Train alone — compete together.' },
+];
 
 export default function Home() {
   const [showCinematic, setShowCinematic] = useState(false);
+  const sectionRefs = useRef<(HTMLElement | HTMLDivElement | null)[]>([]);
+  const heroRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ['start start', 'start -0.3'],
+  });
+  const titleScale = useTransform(scrollYProgress, [0, 1], [1, 0.7]);
+  const titleOpacity = useTransform(scrollYProgress, [0, 1], [1, 0.3]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       if (params.get('justLoggedIn') === 'true') {
         setShowCinematic(true);
-        // Clean up URL
         window.history.replaceState({}, '', '/');
-        // Hide transition after animation
         setTimeout(() => setShowCinematic(false), 800);
       }
     }
+
+    const observer = new IntersectionObserver(
+      (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add('is-visible'); }),
+      { threshold: 0.1 }
+    );
+    sectionRefs.current.forEach((el) => el && observer.observe(el));
+    return () => observer.disconnect();
   }, []);
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-        delayChildren: 0.1,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.5 },
-    },
+  const addRef = (el: HTMLElement | HTMLDivElement | null, i: number) => {
+    sectionRefs.current[i] = el;
   };
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden relative">
+    <div className="min-h-screen bg-background overflow-x-hidden pt-14">
       {/* Cinematic login transition */}
       {showCinematic && (
         <motion.div
@@ -57,7 +59,6 @@ export default function Home() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          {/* Top and bottom bars sliding in */}
           <motion.div
             className="absolute top-0 left-0 right-0 h-1/3 bg-gradient-to-b from-accent via-accent/50 to-transparent"
             initial={{ y: '-100%' }}
@@ -70,256 +71,260 @@ export default function Home() {
             animate={{ y: 0 }}
             transition={{ duration: 0.5, ease: 'easeInOut' }}
           />
-
-          {/* Center loading text */}
           <motion.div
             className="absolute inset-0 flex items-center justify-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.4 }}
           >
-            <motion.div className="text-center">
-              <motion.div
-                className="w-16 h-16 mx-auto mb-4 rounded-full border-3 border-transparent border-t-accent-foreground border-r-accent-foreground"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-              />
-              <motion.p
-                className="text-accent-foreground font-semibold text-lg tracking-widest"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3, duration: 0.4 }}
-              >
+            <div className="text-center">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full border-2 border-transparent border-t-accent-foreground border-r-accent-foreground animate-spin" />
+              <p className="text-accent-foreground font-semibold text-lg tracking-widest animate-pulse">
                 ENTERING YOUR WORLD
-              </motion.p>
-            </motion.div>
+              </p>
+            </div>
           </motion.div>
         </motion.div>
       )}
-      
+
       <Navbar />
-      
-      {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-32">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-          {/* Left Content */}
-          <motion.div 
-            className="flex flex-col gap-6"
-            initial={{ opacity: 0, x: -40 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
-          >
-            <div className="space-y-4">
-              <motion.p 
-                className="text-sm font-semibold text-accent uppercase tracking-wider"
-                variants={itemVariants}
-              >
-                Premium Fitness Experience
-              </motion.p>
-              <motion.h1 
-                className="text-5xl md:text-6xl font-bold text-foreground leading-tight text-balance"
-                variants={itemVariants}
-              >
-                Transform Your Body with Kimo
-              </motion.h1>
-              <motion.p 
-                className="text-lg text-foreground/70 text-balance"
-                variants={itemVariants}
-              >
-                Advanced 3D exercise visualization, AI-powered coaching, and premium fitness gear all in one platform.
-              </motion.p>
-            </div>
 
-            <motion.div 
-              className="flex flex-col sm:flex-row gap-4 pt-4"
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-            >
-              <motion.div variants={itemVariants}>
-                <Link href="/exercises">
-                  <Button size="lg" className="w-full sm:w-auto bg-accent text-accent-foreground hover:bg-accent/90 transition-all hover:scale-105">
-                    Explore Exercises
-                  </Button>
-                </Link>
-              </motion.div>
-              <motion.div variants={itemVariants}>
-                <Link href="/membership">
-                  <Button size="lg" variant="outline" className="w-full sm:w-auto border-accent/50 text-foreground hover:bg-accent/10 transition-all hover:scale-105">
-                    View Membership
-                  </Button>
-                </Link>
-              </motion.div>
-            </motion.div>
-
-            {/* Stats with Stagger Animation */}
-            <motion.div 
-              className="grid grid-cols-3 gap-4 pt-8 border-t border-foreground/10"
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-            >
-              {[
-                { value: '500+', label: 'Exercises' },
-                { value: '50+', label: 'Workouts' },
-                { value: '24/7', label: 'AI Coach' },
-              ].map((stat, index) => (
-                <motion.div key={index} className="space-y-1" variants={itemVariants}>
-                  <p className="text-2xl font-bold text-accent">{stat.value}</p>
-                  <p className="text-sm text-foreground/60">{stat.label}</p>
-                </motion.div>
-              ))}
-            </motion.div>
-          </motion.div>
-
-          {/* Right - Mascot */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
-            animate={{ opacity: 1, scale: 1, rotate: 0 }}
-            transition={{ duration: 1, ease: 'easeOut' }}
-            className="flex justify-center"
-          >
-            <AnimatedMascot size="lg" animated={true} />
-          </motion.div>
+      {/* ─── HERO ─── */}
+      <section ref={heroRef} className="relative min-h-[640px] flex items-end overflow-hidden text-white" style={{ background: '#050a08' }}>
+        {/* Animated blue blur blobs */}
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+          <div className="animate-blob absolute rounded-full" style={{ width: '55%', height: '70%', top: '10%', left: '-10%', background: 'radial-gradient(circle, rgba(0,100,255,0.22) 0%, rgba(0,60,180,0.10) 50%, transparent 75%)', filter: 'blur(60px)' }} />
+          <div className="animate-blob delay-2000 absolute rounded-full" style={{ width: '45%', height: '60%', top: '-5%', right: '5%', background: 'radial-gradient(circle, rgba(0,160,255,0.18) 0%, rgba(0,80,220,0.08) 50%, transparent 75%)', filter: 'blur(55px)' }} />
+          <div className="animate-blob delay-3500 absolute rounded-full" style={{ width: '50%', height: '65%', top: '30%', left: '25%', background: 'radial-gradient(circle, rgba(40,0,200,0.14) 0%, rgba(20,0,150,0.07) 50%, transparent 75%)', filter: 'blur(70px)' }} />
+          <div className="animate-blob delay-5000 absolute rounded-full" style={{ width: '40%', height: '55%', bottom: '-10%', right: '15%', background: 'radial-gradient(circle, rgba(0,200,255,0.15) 0%, rgba(0,120,200,0.07) 50%, transparent 75%)', filter: 'blur(50px)' }} />
+          <div className="animate-blob delay-6500 absolute rounded-full" style={{ width: '38%', height: '50%', bottom: '0%', left: '10%', background: 'radial-gradient(circle, rgba(0,40,160,0.18) 0%, rgba(0,20,120,0.08) 50%, transparent 75%)', filter: 'blur(65px)' }} />
         </div>
-      </section>
 
-      {/* Features Section with Scroll Reveal */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 border-t border-foreground/10">
-        <ScrollReveal direction="up">
-          <div className="text-center space-y-4 mb-16">
-            <h2 className="text-4xl font-bold text-foreground">Why Choose Kimo&apos;s Gym</h2>
-            <p className="text-lg text-foreground/60">Everything you need for your fitness journey</p>
-          </div>
-        </ScrollReveal>
+        {/* Vignette overlays */}
+        <div className="absolute inset-0 z-[1] pointer-events-none" style={{ background: 'radial-gradient(ellipse at 30% 60%, transparent 30%, rgba(5,10,8,0.75) 100%)' }} />
+        <div className="absolute top-0 left-0 bottom-0 z-[1] pointer-events-none" style={{ width: '55%', background: 'linear-gradient(to right, rgba(5,10,8,0.92) 60%, transparent 100%)' }} />
+        <div className="absolute bottom-0 left-0 right-0 z-[2] pointer-events-none" style={{ height: 120, background: 'linear-gradient(to top, rgba(5,10,8,1) 0%, transparent 100%)' }} />
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {[
-            { 
-              title: '3D Visualization', 
-              description: 'Watch detailed 3D models of every exercise from multiple angles',
-              icon: faCube
-            },
-            { 
-              title: 'AI Coaching', 
-              description: 'Get personalized workout plans and real-time form correction',
-              icon: faRobot
-            },
-            { 
-              title: 'Premium Gear', 
-              description: 'Access our curated collection of top-tier fitness equipment',
-              icon: faDumbbell
-            },
-          ].map((feature, index) => (
-            <ScrollReveal key={index} direction={index % 2 === 0 ? 'left' : 'right'} delay={index * 0.1}>
-              <motion.div 
-                className="p-6 rounded-xl border border-foreground/10 bg-card hover:border-accent/50 transition-all hover:shadow-lg hover:shadow-accent/20"
-                whileHover={{ scale: 1.05, translateY: -8 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              >
-                <motion.div 
-                  className="text-4xl mb-4 text-accent"
-                  whileHover={{ rotate: 360, scale: 1.2 }}
-                  transition={{ duration: 0.6 }}
-                >
-                  <FontAwesomeIcon icon={feature.icon} />
-                </motion.div>
-                <h3 className="text-xl font-bold text-foreground mb-2">{feature.title}</h3>
-                <p className="text-foreground/60">{feature.description}</p>
-              </motion.div>
-            </ScrollReveal>
-          ))}
-        </div>
-      </section>
+        {/* Scan line + corners */}
+        <div className="scan-line" />
+        <div className="corner-tl" /><div className="corner-tr" />
+        <div className="corner-bl" /><div className="corner-br" />
 
-      {/* Testimonials Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 border-t border-foreground/10">
-        <ScrollReveal direction="up">
-          <div className="text-center space-y-4 mb-16">
-            <h2 className="text-4xl font-bold text-foreground">What Our Users Say</h2>
-            <p className="text-lg text-foreground/60">Join thousands of satisfied fitness enthusiasts</p>
-          </div>
-        </ScrollReveal>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {[
-            { quote: 'The 3D visualization changed how I perform exercises!', author: 'Alex M.' },
-            { quote: 'Best AI coach I\'ve used. Feels like having a personal trainer.', author: 'Sarah K.' },
-            { quote: 'Quality equipment and amazing community support!', author: 'John D.' },
-          ].map((testimonial, index) => (
-            <ScrollReveal key={index} direction="up" delay={index * 0.15}>
-              <motion.div 
-                className="p-6 rounded-xl border border-accent/20 bg-card/50 backdrop-blur"
-                whileHover={{ scale: 1.05 }}
-              >
-                <p className="text-foreground/80 italic mb-4">&quot;{testimonial.quote}&quot;</p>
-                <p className="text-sm text-accent font-semibold">{testimonial.author}</p>
-              </motion.div>
-            </ScrollReveal>
-          ))}
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 border-t border-foreground/10">
-        <ScrollReveal direction="up">
-          <motion.div
-            className="rounded-2xl bg-gradient-to-r from-accent/15 via-accent/10 to-transparent border border-accent/30 p-12 text-center space-y-6 overflow-hidden relative"
-            whileHover={{ scale: 1.02 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-          >
-            {/* Animated background elements */}
-            <motion.div
-              className="absolute -top-40 -right-40 w-80 h-80 bg-accent/10 rounded-full blur-3xl"
-              animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
-              transition={{ duration: 4, repeat: Infinity }}
+        {/* Mascot */}
+        <div className="absolute right-[14%] bottom-0 z-[4] flex items-end justify-center pointer-events-none hidden md:block" style={{ width: '28%', maxWidth: 260 }}>
+          <div className="relative w-full">
+            <Image
+              src="/images/mascot.png"
+              alt="Kimo Mascot"
+              width={260}
+              height={260}
+              className="mascot-img w-full h-auto object-contain object-bottom"
+              priority
+              style={{ filter: 'drop-shadow(0 0 28px rgba(0,200,160,0.35)) drop-shadow(0 0 55px rgba(0,200,160,0.12))' }}
             />
+            <div className="glow-floor absolute pointer-events-none" style={{ bottom: -2, left: '50%', transform: 'translateX(-50%)', width: '68%', height: 22, background: 'radial-gradient(ellipse, rgba(0,200,160,0.65) 0%, transparent 70%)', filter: 'blur(9px)' }} />
+          </div>
+        </div>
 
-            <div className="relative z-10">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground">Ready to Transform?</h2>
-              <p className="text-foreground/70 max-w-md mx-auto text-lg">
-                Join thousands of fitness enthusiasts achieving their goals with Kimo&apos;s Gym
-              </p>
-              <motion.div
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Link href="/membership">
-                  <Button size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 text-lg px-8">
-                    Start Free Trial Today
-                  </Button>
-                </Link>
-              </motion.div>
+        {/* Hero content */}
+        <div className="hero-content relative z-[10] pb-[50px] pt-[52px] px-[30px] max-w-2xl">
+          <div className="inline-flex items-center gap-[7px] mb-5 px-3 py-1 border text-[10px] tracking-[3.5px] uppercase font-semibold" style={{ background: 'rgba(0,200,160,0.07)', borderColor: 'rgba(0,200,160,0.2)', color: '#00c8a0', fontFamily: "'Barlow Condensed', sans-serif" }}>
+            <span className="badge-dot" style={{ width: 5, height: 5, background: '#00c8a0', borderRadius: '50%', display: 'inline-block' }} />
+            Premium Fitness &middot; Est. 2024
+          </div>
+
+          <motion.div style={{ scale: titleScale, opacity: titleOpacity, transformOrigin: 'left center' }} className="mb-[6px]">
+            {['FORGE', 'YOUR'].map((word, i) => (
+              <div key={word} className={`tl-${i + 1} overflow-hidden`} style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(54px,9.5vw,96px)', lineHeight: 0.88, letterSpacing: 2 }}>
+                <span>{word}</span>
+              </div>
+            ))}
+            <div className="tl-3 overflow-hidden" style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(54px,9.5vw,96px)', lineHeight: 0.88, letterSpacing: 2 }}>
+              <span>LEGEND</span>
             </div>
           </motion.div>
-        </ScrollReveal>
+
+          <p className="tag-line" style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 14, fontWeight: 300, letterSpacing: 6, color: 'rgba(255,255,255,0.28)', textTransform: 'uppercase', margin: '13px 0 18px' }}>
+            Metal Sport Gym
+          </p>
+          <p className="desc-text" style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', lineHeight: 1.8, maxWidth: 350, marginBottom: 26, fontWeight: 300 }}>
+            Advanced 3D exercise visualization, AI-powered coaching, and premium fitness gear — all in one elite platform built for serious athletes.
+          </p>
+
+          <div className="btns-row flex gap-[11px] flex-wrap mb-[30px]">
+            <Link href="/exercises">
+              <button className="btn-primary transition-all duration-200 hover:-translate-y-0.5" style={{ background: '#00c8a0', color: '#050505', padding: '12px 25px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: 12, fontWeight: 700, letterSpacing: 3, textTransform: 'uppercase', border: 'none', cursor: 'pointer' }}>
+                Start Training
+              </button>
+            </Link>
+            <Link href="/workouts">
+              <button className="btn-secondary transition-all duration-200" style={{ background: 'transparent', color: 'rgba(255,255,255,.55)', padding: '11px 21px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: 12, fontWeight: 600, letterSpacing: 3, textTransform: 'uppercase', border: '1px solid rgba(255,255,255,0.14)', cursor: 'pointer' }}>
+                View Programs
+              </button>
+            </Link>
+          </div>
+
+          <div className="stats-row flex gap-[22px] pt-[18px]" style={{ borderTop: '1px solid rgba(255,255,255,.06)' }}>
+            {[['3D', 'Exercise Viz'], ['200+', 'Exercises'], ['AI', 'Coach'], ['24/7', 'Access']].map(([n, l]) => (
+              <div key={l}>
+                <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 27, color: '#00c8a0', lineHeight: 1 }}>{n}</div>
+                <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 10, letterSpacing: 2, color: 'rgba(255,255,255,.28)', textTransform: 'uppercase', marginTop: 2 }}>{l}</div>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
-      {/* Floating Particles Background */}
-      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-        {[...Array(5)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-1 h-1 bg-accent rounded-full"
-            animate={{
-              y: [0, -500, 0],
-              x: [0, Math.random() * 100 - 50, 0],
-              opacity: [0, 0.5, 0],
-            }}
-            transition={{
-              duration: 8 + i * 2,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-          />
-        ))}
+      {/* Scroll cue */}
+      <div className="scroll-cue text-center py-2" style={{ background: '#050a08' }}>
+        <div className="sc-bar mx-auto" style={{ width: 1, height: 32, background: 'linear-gradient(to bottom, transparent, #00c8a0)' }} />
+        <p style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 9, letterSpacing: 3, color: 'rgba(255,255,255,.28)', textTransform: 'uppercase', marginTop: 5 }}>Scroll</p>
       </div>
 
+      <div style={{ height: 1, background: 'rgba(255,255,255,.04)' }} />
+
+      {/* ─── FEATURES ─── */}
+      <section ref={(el) => addRef(el, 0)} className="reveal text-white" style={{ padding: '56px 30px', background: '#050a08' }}>
+        <p style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 10, letterSpacing: 4, textTransform: 'uppercase', color: '#00c8a0', marginBottom: 11 }}>What we offer</p>
+        <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(28px,4.5vw,50px)', lineHeight: 0.95, letterSpacing: 2, marginBottom: 32 }}>BUILT FOR<br />CHAMPIONS</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-px" style={{ background: 'rgba(255,255,255,0.04)' }}>
+          {FEATURES.map((f, i) => (
+            <div key={f.n} ref={(el) => addRef(el, i + 1)} className="feat-card relative overflow-hidden" style={{ background: '#050a08', padding: '24px 18px', transitionDelay: `${i * 0.08}s` }}>
+              <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 36, color: 'rgba(0,200,160,0.1)', lineHeight: 1, marginBottom: 9 }}>{f.n}</div>
+              <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 14, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: '#fff', marginBottom: 6 }}>{f.title}</div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,.36)', lineHeight: 1.65, fontWeight: 300 }}>{f.desc}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <div style={{ height: 1, background: 'rgba(255,255,255,.04)' }} />
+
+      {/* ─── MASCOT SECTION ─── */}
+      <div ref={(el) => addRef(el, 7)} className="reveal text-white flex items-center gap-8" style={{ padding: '48px 30px', background: 'rgba(0,200,160,0.015)', borderTop: '1px solid rgba(0,200,160,0.06)', borderBottom: '1px solid rgba(0,200,160,0.06)' }}>
+        <div className="w-[100px] flex-shrink-0 hidden md:block" style={{ filter: 'drop-shadow(0 0 16px rgba(0,200,160,0.22))' }}>
+          <Image
+            src="/images/mascot.png"
+            alt="Kimo"
+            width={100}
+            height={100}
+            className="w-full h-auto"
+            style={{ animation: 'mFloat 7s ease-in-out infinite' }}
+          />
+        </div>
+        <div>
+          <p style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 10, letterSpacing: 4, textTransform: 'uppercase', color: '#00c8a0', marginBottom: 11 }}>Meet your coach</p>
+          <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(28px,4.5vw,50px)', lineHeight: 0.95, letterSpacing: 2, marginBottom: 9 }}>
+            TRAIN WITH<br /><span style={{ color: '#00c8a0' }}>KIMO — YOUR AI</span><br />GUIDE
+          </h2>
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,.4)', lineHeight: 1.75, fontWeight: 300, maxWidth: 300, marginBottom: 16 }}>
+            Kimo is the face of Metal Sport — a symbol of peak performance, discipline, and relentless improvement. Your AI coach, always by your side.
+          </p>
+          <div className="flex gap-5">
+            {[['100%', 'Personalized'], ['∞', 'Motivation'], ['0', 'Excuses']].map(([n, l]) => (
+              <div key={l}>
+                <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: '#00c8a0' }}>{n}</div>
+                <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 10, letterSpacing: 2, color: 'rgba(255,255,255,.28)', textTransform: 'uppercase' }}>{l}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div style={{ height: 1, background: 'rgba(255,255,255,.04)' }} />
+
+      {/* ─── CTA ─── */}
+      <section ref={(el) => addRef(el, 8)} className="reveal text-center relative overflow-hidden text-white" style={{ padding: '68px 30px', background: '#050a08' }}>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none rounded-full" style={{ width: 460, height: 460, background: 'radial-gradient(circle, rgba(0,200,160,0.04) 0%, transparent 70%)' }} />
+        <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(40px,6vw,74px)', lineHeight: 0.9, letterSpacing: 3, marginBottom: 13 }}>
+          READY TO<br /><span style={{ color: '#00c8a0' }}>DOMINATE</span>?
+        </h2>
+        <p style={{ fontSize: 13, color: 'rgba(255,255,255,.36)', fontWeight: 300, marginBottom: 24, letterSpacing: 1 }}>
+          Join thousands of athletes already training smarter with Metal Sport.
+        </p>
+        <Link href="/membership">
+          <button className="btn-primary transition-all duration-200 hover:-translate-y-0.5" style={{ background: '#00c8a0', color: '#050505', padding: '14px 40px', fontFamily: "'Barlow Condensed', sans-serif", fontSize: 13, fontWeight: 700, letterSpacing: 3, textTransform: 'uppercase', border: 'none', cursor: 'pointer' }}>
+            Start Free Trial
+          </button>
+        </Link>
+      </section>
+
       <Footer />
+
+      {/* ─── INJECT KEYFRAMES ─── */}
+      <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;700&family=Barlow:wght@300;400&display=swap');
+
+        @keyframes blob {
+          0%,100% { transform: translate(0,0) scale(1); }
+          33%      { transform: translate(40px,-30px) scale(1.08); }
+          66%      { transform: translate(-25px,20px) scale(0.95); }
+        }
+        @keyframes scan {
+          0%   { top:-1px; opacity:0; }
+          8%   { opacity:1; }
+          92%  { opacity:.5; }
+          100% { top:100%; opacity:0; }
+        }
+        @keyframes mUp    { to { opacity:1; transform:translateY(0); } }
+        @keyframes mFloat {
+          0%,100% { transform:translateY(0) rotate(-.5deg); }
+          50%     { transform:translateY(-14px) rotate(.5deg); }
+        }
+        @keyframes gf {
+          0%   { opacity:.3; transform:translateX(-50%) scaleX(.65); }
+          100% { opacity:1;  transform:translateX(-50%) scaleX(1.45); }
+        }
+        @keyframes cf { to { opacity:1; } }
+        @keyframes tlU { to { opacity:1; transform:translateY(0); } }
+        @keyframes fi { to { opacity:1; } }
+        @keyframes ci { to { opacity:1; transform:translateY(0); } }
+        @keyframes scB {
+          0%,100% { opacity:0; transform:scaleY(0); transform-origin:top; }
+          55%     { opacity:1; transform:scaleY(1); transform-origin:top; }
+        }
+        @keyframes bd { 0%,100%{opacity:1} 50%{opacity:.1} }
+
+        .animate-blob   { animation: blob 8s ease-in-out infinite; }
+        .delay-2000     { animation-delay: 2s; }
+        .delay-3500     { animation-delay: 3.5s; }
+        .delay-5000     { animation-delay: 5s; }
+        .delay-6500     { animation-delay: 6.5s; }
+
+        .scan-line      { animation: scan 6s linear infinite; position:absolute; top:0; left:0; right:0; height:1px;
+                          background:rgba(0,200,160,0.45); box-shadow:0 0 12px rgba(0,200,160,0.6); z-index:5; }
+        .corner-tl      { animation: cf 1s ease 0.4s forwards; opacity:0; position:absolute; top:18px; left:18px; width:24px; height:24px; border-top:1px solid rgba(0,200,160,0.6); border-left:1px solid rgba(0,200,160,0.6); z-index:5; }
+        .corner-tr      { animation: cf 1s ease 0.5s forwards; opacity:0; position:absolute; top:18px; right:18px; width:24px; height:24px; border-top:1px solid rgba(0,200,160,0.6); border-right:1px solid rgba(0,200,160,0.6); z-index:5; }
+        .corner-bl      { animation: cf 1s ease 0.6s forwards; opacity:0; position:absolute; bottom:18px; left:18px; width:24px; height:24px; border-bottom:1px solid rgba(0,200,160,0.6); border-left:1px solid rgba(0,200,160,0.6); z-index:5; }
+        .corner-br      { animation: cf 1s ease 0.7s forwards; opacity:0; position:absolute; bottom:18px; right:18px; width:24px; height:24px; border-bottom:1px solid rgba(0,200,160,0.6); border-right:1px solid rgba(0,200,160,0.6); z-index:5; }
+
+        .mascot-img     { animation: mUp 1.3s cubic-bezier(0.22,1,0.36,1) 0.2s forwards, mFloat 7s ease-in-out 1.5s infinite; opacity:0; transform:translateY(90px); }
+        .glow-floor     { animation: gf 3.5s ease-in-out infinite alternate; }
+        .hero-content   { animation: ci 0.9s ease 0.05s forwards; opacity:0; transform:translateY(22px); }
+
+        .tl-1 span { animation: tlU 0.72s cubic-bezier(0.22,1,0.36,1) 0.14s forwards; opacity:0; transform:translateY(108%); display:block; }
+        .tl-2 span { animation: tlU 0.72s cubic-bezier(0.22,1,0.36,1) 0.26s forwards; opacity:0; transform:translateY(108%); display:block; }
+        .tl-3 span { animation: tlU 0.72s cubic-bezier(0.22,1,0.36,1) 0.38s forwards; opacity:0; transform:translateY(108%); display:block; color:#00c8a0; }
+
+        .tag-line   { animation: fi 0.7s ease 0.6s forwards;  opacity:0; }
+        .desc-text  { animation: fi 0.7s ease 0.75s forwards; opacity:0; }
+        .btns-row   { animation: fi 0.7s ease 0.9s forwards;  opacity:0; }
+        .stats-row  { animation: fi 0.7s ease 1s forwards;    opacity:0; }
+        .scroll-cue { animation: fi 1s ease 2.2s forwards;    opacity:0; }
+        .badge-dot  { animation: bd 1.6s ease-in-out infinite; }
+        .sc-bar     { animation: scB 2s ease-in-out infinite; }
+
+        .reveal             { opacity:0; transform:translateY(32px); transition:opacity .7s ease, transform .7s ease; }
+        .reveal.is-visible  { opacity:1; transform:translateY(0); }
+        .feat-card          { opacity:0; transform:translateY(26px); transition:opacity .55s ease, transform .55s ease, background .25s; }
+        .feat-card.is-visible { opacity:1; transform:translateY(0); }
+        .feat-card::after   { content:''; position:absolute; bottom:0; left:0; width:0; height:2px; background:#00c8a0; transition:width .35s; }
+        .feat-card:hover::after { width:100%; }
+        .feat-card:hover    { background:rgba(0,200,160,0.03); }
+
+        .btn-primary { clip-path: polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px)); }
+        .btn-secondary { clip-path: polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px)); }
+      `}</style>
     </div>
   );
 }

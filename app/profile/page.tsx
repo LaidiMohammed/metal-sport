@@ -6,6 +6,8 @@ import { useStore } from '@/lib/store';
 import { useAuthProtected } from '@/hooks/useAuthProtected';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { useRef } from 'react';
 
 export default function ProfilePage() {
   useAuthProtected();
@@ -20,7 +22,7 @@ export default function ProfilePage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background pt-14">
         <Navbar />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
           <h1 className="text-2xl font-bold text-foreground mb-4">Please sign in</h1>
@@ -35,21 +37,35 @@ export default function ProfilePage() {
     );
   }
 
+  const heroRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ['start start', 'start -0.3'],
+  });
+  const titleScale = useTransform(scrollYProgress, [0, 1], [1, 0.7]);
+  const titleOpacity = useTransform(scrollYProgress, [0, 1], [1, 0.3]);
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pt-14">
       <Navbar />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Profile Header */}
-        <div className="border border-foreground/10 rounded-lg p-8 bg-card mb-12">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 mb-6">
-            <div className="w-20 h-20 rounded-full bg-accent/20 flex items-center justify-center">
+      {/* Hero banner */}
+      <div ref={heroRef} className="relative overflow-hidden" style={{ padding: '64px 0 56px' }}>
+        <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,180,216,0.15) 0%, rgba(0,180,216,0.06) 40%, rgba(0,180,216,0.02) 70%, transparent 100%)' }} />
+        <div className="absolute top-[-80px] right-[10%] w-[500px] h-[500px] rounded-full hidden md:block" style={{ background: 'radial-gradient(circle, rgba(0,212,170,0.1) 0%, transparent 70%)', filter: 'blur(60px)' }} />
+        <div className="absolute bottom-0 left-[10%] w-[300px] h-[300px] rounded-full" style={{ background: 'radial-gradient(circle, rgba(0,180,216,0.08) 0%, transparent 70%)', filter: 'blur(80px)' }} />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+            <div className="w-20 h-20 rounded-full bg-accent/20 flex items-center justify-center border-2 border-accent/30">
               <span className="text-3xl">👤</span>
             </div>
             <div className="flex-1">
-              <h1 className="text-3xl font-bold text-foreground mb-2">{user.name}</h1>
+              <motion.div style={{ scale: titleScale, opacity: titleOpacity, transformOrigin: 'left' }}>
+                <h1 className="text-3xl font-bold text-foreground mb-1">{user.name}</h1>
+              </motion.div>
               <p className="text-foreground/60">{user.email}</p>
-              <div className="mt-3">
+              <div className="mt-2">
                 <span className={`px-3 py-1 rounded-full text-sm font-medium ${
                   user.membership === 'elite'
                     ? 'bg-yellow-500/20 text-yellow-400'
@@ -66,7 +82,9 @@ export default function ProfilePage() {
             </Button>
           </div>
         </div>
+      </div>
 
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12">
           <div className="p-6 rounded-lg border border-foreground/10 bg-card">

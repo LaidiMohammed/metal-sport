@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useStore } from '@/lib/store';
-import QRCode from 'qrcode.react';
+import { QRCodeSVG } from 'qrcode.react';
 
 export function ProfileDashboard() {
   const user = useStore((state) => state.user);
@@ -81,11 +81,11 @@ export function ProfileDashboard() {
             </div>
 
             <div className="user-info">
-              <h2>{user?.name || 'Fitness Enthusiast'}</h2>
+              <h2>{user?.name || 'Fitness Enthusiast'} {user?.lastName || ''}</h2>
               <p className="email">{user?.email}</p>
               <div className="membership-status">
                 <span className="badge">{user?.membership || 'free'}</span>
-                <span className="status">Active</span>
+                <span className="status">{user?.isActive ? 'Active' : 'Expired'}</span>
               </div>
             </div>
 
@@ -120,8 +120,8 @@ export function ProfileDashboard() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
             >
-              <QRCode
-                value={user?.id || 'kimos-gym-user'}
+              <QRCodeSVG
+                value={JSON.stringify({ id: user?.id, name: user?.name, lastName: user?.lastName })}
                 size={200}
                 level="H"
                 includeMargin={true}
@@ -131,6 +131,50 @@ export function ProfileDashboard() {
               <p>Scan to view your profile</p>
             </motion.div>
           )}
+        </motion.div>
+
+        {/* Verification Section — QR + ID + Subscription */}
+        <motion.div variants={itemVariants} style={{
+          background: 'rgba(0,212,170,0.04)', border: '1px solid rgba(0,212,170,0.15)',
+          borderRadius: 12, padding: '16px 20px', marginTop: 16,
+        }}>
+          <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'rgba(255,255,255,0.4)', marginBottom: 10 }}>
+            Verification & Subscription
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 8, padding: '10px 12px' }}>
+              <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', marginBottom: 2, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>QR Code</p>
+              <p style={{ fontSize: 12, color: '#00d4aa', fontWeight: 600 }}>Scan at gym desk</p>
+            </div>
+            <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 8, padding: '10px 12px' }}>
+              <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', marginBottom: 2, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Member ID</p>
+              <code
+                onClick={() => { navigator.clipboard.writeText(user?.id || ''); }}
+                style={{
+                  fontSize: 12, fontWeight: 700, color: '#fff', cursor: 'pointer',
+                  background: 'rgba(255,255,255,0.06)', padding: '3px 8px', borderRadius: 4,
+                  display: 'inline-block', fontFamily: 'monospace',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                }}
+                title="Click to copy"
+              >
+                {user?.id || '—'}
+              </code>
+              <p style={{ fontSize: 8, color: 'rgba(255,255,255,0.2)', marginTop: 2 }}>Click to copy — give to admin</p>
+            </div>
+            <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 8, padding: '10px 12px' }}>
+              <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', marginBottom: 2, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Sessions Left</p>
+              <p style={{ fontSize: 16, fontWeight: 800, color: (user?.sessionsLeft || 0) > 5 ? '#4ade80' : (user?.sessionsLeft || 0) > 0 ? '#fbbf24' : '#ef4444' }}>
+                {user?.sessionsLeft ?? '-'}
+              </p>
+            </div>
+            <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 8, padding: '10px 12px' }}>
+              <p style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', marginBottom: 2, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Expires</p>
+              <p style={{ fontSize: 16, fontWeight: 800, color: user?.isActive ? '#fff' : '#ef4444' }}>
+                {user?.expirationDate || '-'}
+              </p>
+            </div>
+          </div>
         </motion.div>
 
         {/* Stats Section */}

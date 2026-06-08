@@ -29,7 +29,7 @@ export function ProfessionalLogo() {
           whileHover={{ letterSpacing: '0.05em' }}
           transition={{ duration: 0.3 }}
         >
-          Kimo
+          Metal Sport
         </motion.span>
         <span className="text-xs text-accent uppercase font-semibold tracking-widest leading-none">
           Gym

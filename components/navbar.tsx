@@ -1,25 +1,30 @@
 'use client';
 
 import Link from 'next/link';
-import { ProfessionalLogo } from '@/components/professional-logo';
+import { MetalSportLogo } from '@/components/3d/MetalSportLogo';
 import { AnimatedProfileMenu } from '@/components/animated-profile-menu';
 import { useStore } from '@/lib/store';
 import { usePathname } from 'next/navigation';
-import { Menu, X } from 'lucide-react';
-import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { Menu, X, Crown } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const user = useStore((state) => state.user);
   const pathname = usePathname();
 
-  // Hide navbar on auth pages
-  if (pathname === '/auth') {
-    return null;
-  }
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  if (pathname === '/auth') return null;
 
   const navLinks = [
+    ...(user && user.role === 'admin' ? [{ href: '/admin', label: 'Admin' }] : []),
     { href: '/exercises', label: 'Exercises' },
     { href: '/workouts', label: 'Workouts' },
     { href: '/shop', label: 'Shop' },
@@ -28,145 +33,158 @@ export function Navbar() {
   ];
 
   return (
-    <motion.nav 
-      className="sticky top-0 z-50 w-full border-b border-accent/20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.4, ease: 'easeOut' }}
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled
+          ? 'bg-background/90 border-b border-foreground/[0.06]'
+          : 'bg-background'
+      }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <ProfessionalLogo />
+      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-14">
+          <Link href="/" className="flex-shrink-0">
+            <MetalSportLogo variant="navbar" />
+          </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
-            {navLinks.map((link, idx) => (
-              <motion.div
-                key={link.href}
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.05, duration: 0.3 }}
-              >
+          {/* Desktop Nav */}
+          <div className="hidden lg:flex items-center h-full gap-0.5">
+            {navLinks.map((link) => {
+              const isActive = pathname === link.href;
+              return (
                 <Link
+                  key={link.href}
                   href={link.href}
-                  className="text-sm font-medium text-foreground/70 hover:text-accent transition-colors relative group"
+                  className="relative flex items-center px-3 h-full group"
                 >
-                  {link.label}
-                  <motion.span
-                    className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-accent to-accent/60 group-hover:w-full"
-                    transition={{ duration: 0.3 }}
-                  />
+                  <span
+                    className={`relative z-10 text-[13px] font-medium tracking-wide uppercase transition-colors duration-200 ${
+                      isActive ? 'text-accent' : 'text-foreground/50 group-hover:text-foreground'
+                    }`}
+                  >
+                    {link.label}
+                  </span>
+                  {isActive && (
+                    <motion.span
+                      layoutId="navbar-underline"
+                      className="absolute inset-0 bg-accent/10 rounded-lg"
+                      transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+                    />
+                  )}
                 </Link>
-              </motion.div>
-            ))}
+              );
+            })}
           </div>
 
-          {/* Right Side - Profile Menu or Auth Buttons */}
-          <div className="flex items-center gap-4">
+          {/* Right */}
+          <div className="flex items-center gap-1">
             {user ? (
-              <AnimatedProfileMenu />
+              <div className="flex items-center gap-1">
+                {user.role === 'admin' && <Crown className="w-4 h-4 text-yellow-400" strokeWidth={1.5} />}
+                <AnimatedProfileMenu />
+              </div>
             ) : (
-              <motion.div
-                className="hidden md:flex items-center gap-3"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.4 }}
-              >
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Link
-                    href="/auth"
-                    className="px-4 py-2 text-sm font-medium text-foreground/70 hover:text-foreground transition-colors"
-                  >
-                    Sign In
-                  </Link>
-                </motion.div>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Link
-                    href="/auth"
-                    className="px-4 py-2 text-sm font-medium text-accent-foreground bg-gradient-to-r from-accent to-accent/80 hover:shadow-lg hover:shadow-accent/40 rounded-lg transition-all"
-                  >
-                    Join Now
-                  </Link>
-                </motion.div>
-              </motion.div>
-            )}
-
-            {/* Mobile Menu Button */}
-            <motion.button
-              className="md:hidden p-2"
-              onClick={() => setIsOpen(!isOpen)}
-              aria-label="Toggle menu"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              {isOpen ? (
-                <X className="w-6 h-6 text-foreground" />
-              ) : (
-                <Menu className="w-6 h-6 text-foreground" />
-              )}
-            </motion.button>
-          </div>
-        </div>
-
-        {/* Mobile Navigation */}
-        {isOpen && (
-          <motion.div
-            className="md:hidden pb-4 space-y-2 border-t border-accent/20 pt-4"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            {navLinks.map((link, idx) => (
-              <motion.div
-                key={link.href}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: idx * 0.05 }}
-              >
-                <Link
-                  href={link.href}
-                  onClick={() => setIsOpen(false)}
-                  className="block px-4 py-2 text-sm font-medium text-foreground/70 hover:text-accent hover:bg-accent/10 rounded-lg transition-all"
-                >
-                  {link.label}
-                </Link>
-              </motion.div>
-            ))}
-
-            {!user && (
-              <div className="pt-2 space-y-2 border-t border-accent/20">
+              <div className="hidden lg:flex items-center gap-1">
                 <Link
                   href="/auth"
-                  onClick={() => setIsOpen(false)}
-                  className="block px-4 py-2 text-sm font-medium text-foreground/70 hover:text-accent text-center"
+                  className="px-4 py-2 text-[13px] font-medium text-foreground/50 hover:text-foreground transition-colors duration-200 tracking-wide rounded-lg hover:bg-foreground/[0.04]"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/auth"
-                  onClick={() => setIsOpen(false)}
-                  className="block px-4 py-2 text-sm font-medium text-accent-foreground bg-gradient-to-r from-accent to-accent/80 rounded-lg text-center"
+                  className="ml-1 px-5 py-2 text-[13px] font-semibold text-background bg-accent hover:bg-accent/90 transition-all duration-200 tracking-wide uppercase rounded-lg hover:shadow-lg hover:shadow-accent/20"
                 >
                   Join Now
                 </Link>
               </div>
             )}
 
-            {user && (
-              <div className="pt-2 border-t border-accent/20">
-                <AnimatedProfileMenu />
+            {/* Mobile toggle */}
+            <button
+              className="lg:hidden p-2 -mr-2 rounded-lg hover:bg-foreground/[0.05] transition-colors duration-200"
+              onClick={() => setIsOpen(!isOpen)}
+              aria-label="Toggle menu"
+            >
+              <div className="relative w-5 h-5">
+                <motion.span
+                  className="absolute top-[3px] left-0 w-full h-[2px] rounded-full bg-foreground origin-center"
+                  animate={isOpen ? { rotate: 45, y: 6 } : { rotate: 0, y: 0 }}
+                  transition={{ duration: 0.2 }}
+                />
+                <motion.span
+                  className="absolute top-[9px] left-0 w-full h-[2px] rounded-full bg-foreground"
+                  animate={isOpen ? { opacity: 0, x: 10 } : { opacity: 1, x: 0 }}
+                  transition={{ duration: 0.15 }}
+                />
+                <motion.span
+                  className="absolute bottom-[3px] left-0 w-full h-[2px] rounded-full bg-foreground origin-center"
+                  animate={isOpen ? { rotate: -45, y: -6 } : { rotate: 0, y: 0 }}
+                  transition={{ duration: 0.2 }}
+                />
               </div>
-            )}
-          </motion.div>
-        )}
-      </div>
-    </motion.nav>
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile menu */}
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              className="lg:hidden overflow-hidden"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <div className="py-2 border-t border-foreground/[0.06]">
+                {navLinks.map((link) => {
+                  const isActive = pathname === link.href;
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setIsOpen(false)}
+                      className={`flex items-center gap-3 px-4 py-2.5 text-sm font-medium tracking-wide transition-colors duration-200 rounded-lg mx-1 ${
+                        isActive
+                          ? 'text-accent bg-accent/[0.06]'
+                          : 'text-foreground/50 hover:text-foreground hover:bg-foreground/[0.04]'
+                      }`}
+                    >
+                      {isActive && <span className="w-1 h-1 rounded-full bg-accent" />}
+                      {link.label}
+                    </Link>
+                  );
+                })}
+
+                {!user && (
+                  <div className="mt-2 pt-2 border-t border-foreground/[0.06] px-4 space-y-1">
+                    <Link
+                      href="/auth"
+                      onClick={() => setIsOpen(false)}
+                      className="block px-4 py-2.5 text-sm font-medium text-foreground/50 hover:text-foreground text-center rounded-lg hover:bg-foreground/[0.04] transition-colors duration-200"
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      href="/auth"
+                      onClick={() => setIsOpen(false)}
+                      className="block px-4 py-2.5 text-sm font-semibold text-background bg-accent hover:bg-accent/90 text-center rounded-lg transition-all duration-200 uppercase tracking-wide"
+                    >
+                      Join Now
+                    </Link>
+                  </div>
+                )}
+
+                {user && (
+                  <div className="mt-2 pt-2 border-t border-foreground/[0.06] px-4">
+                    <AnimatedProfileMenu />
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </nav>
+    </header>
   );
 }

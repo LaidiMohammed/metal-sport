@@ -7,7 +7,7 @@ import { useState } from 'react';
 export function AnimatedLogo() {
   const [isHovered, setIsHovered] = useState(false);
 
-  const containerVariants = {
+  const logoVariants = {
     initial: {
       scale: 0,
       opacity: 0,
@@ -16,10 +16,19 @@ export function AnimatedLogo() {
       scale: 1,
       opacity: 1,
       transition: {
-        type: 'spring',
+        type: 'spring' as const,
         stiffness: 100,
         damping: 15,
         delay: 0.2,
+      },
+    },
+    hover: {
+      scale: 1.15,
+      rotate: 10,
+      transition: {
+        type: 'spring' as const,
+        stiffness: 200,
+        damping: 10,
       },
     },
   };
@@ -30,32 +39,19 @@ export function AnimatedLogo() {
       transition: {
         duration: 2,
         repeat: Infinity,
-        ease: 'easeInOut',
-      },
-    },
-  };
-
-  const hoverVariants = {
-    hover: {
-      scale: 1.15,
-      rotate: 10,
-      transition: {
-        type: 'spring',
-        stiffness: 200,
-        damping: 10,
+        ease: 'easeInOut' as const,
       },
     },
   };
 
   return (
     <motion.div
-      variants={containerVariants}
+      variants={logoVariants}
       initial="initial"
       animate="animate"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       whileHover="hover"
-      variants={hoverVariants}
       className="relative"
     >
       {/* Glow background */}
@@ -71,7 +67,7 @@ export function AnimatedLogo() {
         animate={!isHovered ? 'animate' : 'initial'}
       >
         <Image
-          src="/images/kimo-logo.jpg"
+          src="/images/logo.jpg"
           alt="Kimo's Gym Logo"
           width={48}
           height={48}

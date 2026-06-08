@@ -4,6 +4,7 @@ import React, { useRef, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { motion } from 'framer-motion';
 import gsap from 'gsap';
+import * as THREE from 'three';
 
 export function Mascot3D() {
   const groupRef = useRef<THREE.Group>(null);

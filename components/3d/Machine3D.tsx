@@ -3,6 +3,7 @@
 import React, { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { PerspectiveCamera } from '@react-three/drei';
+import * as THREE from 'three';
 
 interface Machine3DProps {
   machineType: 'treadmill' | 'dumbbell' | 'bench' | 'leg-press';
