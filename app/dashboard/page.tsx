@@ -100,6 +100,29 @@ export default function DashboardPage() {
   const pathname = usePathname();
   const router = useRouter();
 
+  // Fetch real stats from Supabase
+  const [totalWorkouts, setTotalWorkouts] = useState(0);
+  const [totalHours, setTotalHours] = useState(0);
+  const [recentWorkouts, setRecentWorkouts] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!user) return;
+    fetch(`/api/workouts?userId=${user.id}`)
+      .then(r => r.ok ? r.json() : [])
+      .then(data => {
+        setTotalWorkouts(data.length);
+        setTotalHours(Math.round(data.reduce((s: number, w: any) => s + (w.duration || 0), 0) / 60));
+        setRecentWorkouts(data.slice(0, 5).map((w: any) => ({
+          name: w.exercise_id,
+          date: w.date?.split('T')[0] || '',
+          duration: `${w.duration || 0} min`,
+          exercises: w.reps || 1,
+          completed: w.completed,
+        })));
+      })
+      .catch(() => {});
+  }, [user]);
+
   useEffect(() => {
     if (user && user.email !== ALLOWED_EMAIL) {
       router.replace('/');
@@ -109,10 +132,10 @@ export default function DashboardPage() {
   if (!user || user.email !== ALLOWED_EMAIL) return null;
 
   const statCards = [
-    { label: 'Total Workouts', value: '47', icon: Flame, suffix: 'this month', color: '#00b4d8' },
+    { label: 'Total Workouts', value: String(totalWorkouts), icon: Flame, suffix: 'all time', color: '#00b4d8' },
     { label: 'Workout Streak', value: '12', icon: Award, suffix: 'days', color: '#4ade80' },
-    { label: 'Total Hours', value: '68h', icon: Clock, suffix: 'tracked', color: '#f59e0b' },
-    { label: 'Calories', value: '26,450', icon: Target, suffix: 'burned', color: '#ef4444' },
+    { label: 'Total Hours', value: `${totalHours}h`, icon: Clock, suffix: 'tracked', color: '#f59e0b' },
+    { label: 'Active Users', value: '-', icon: Target, suffix: 'this month', color: '#ef4444' },
   ];
 
   const weeklyActivity = [
@@ -123,14 +146,6 @@ export default function DashboardPage() {
     { day: 'Fri', hours: 1.8 },
     { day: 'Sat', hours: 2.2 },
     { day: 'Sun', hours: 0 },
-  ];
-
-  const recentWorkouts = [
-    { name: 'Upper Body Strength', date: 'Today', duration: '60 min', exercises: 8, completed: true },
-    { name: 'Leg Day Power', date: 'Yesterday', duration: '50 min', exercises: 6, completed: true },
-    { name: 'Full Body HIIT', date: '2 days ago', duration: '35 min', exercises: 10, completed: true },
-    { name: 'Core & Cardio', date: '3 days ago', duration: '40 min', exercises: 5, completed: false },
-    { name: 'Upper Body Strength', date: '5 days ago', duration: '55 min', exercises: 8, completed: true },
   ];
 
   const personalBests = [

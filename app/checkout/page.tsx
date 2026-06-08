@@ -4,12 +4,15 @@ import { Navbar } from '@/components/navbar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuthProtected } from '@/hooks/useAuthProtected';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Loader } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import { useStore } from '@/lib/store';
 
 export default function CheckoutPage() {
   useAuthProtected();
+  const user = useStore((s) => s.user);
+  const storeProducts = useStore((s) => s.products);
   const [step, setStep] = useState<'cart' | 'shipping' | 'payment' | 'confirmation'>('cart');
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -25,15 +28,22 @@ export default function CheckoutPage() {
     cvv: '',
   });
 
-  const cartItems = [
-    { id: '1', name: 'Premium Dumbbell Set', price: 299, quantity: 1 },
-    { id: '2', name: 'Workout Mat Pro', price: 89, quantity: 1 },
-    { id: '3', name: 'Resistance Bands Kit', price: 49, quantity: 2 },
-  ];
+  const [cartItems, setCartItems] = useState<{ id: string; name: string; price: number; quantity: number }[]>([]);
+
+  useEffect(() => {
+    // Load cart from localStorage or use first 3 products as demo
+    const stored = localStorage.getItem('checkout-cart');
+    if (stored) {
+      setCartItems(JSON.parse(stored));
+    } else if (storeProducts.length) {
+      const demo = storeProducts.slice(0, 3).map(p => ({ id: p.id, name: p.name, price: p.price, quantity: 1 }));
+      setCartItems(demo);
+    }
+  }, [storeProducts]);
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const tax = Math.round(subtotal * 0.08 * 100) / 100;
-  const shipping = 15;
+  const shipping = subtotal > 0 ? 0 : 0;
   const total = subtotal + tax + shipping;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,7 +55,18 @@ export default function CheckoutPage() {
     e.preventDefault();
     setLoading(true);
 
-    // Simulate payment processing
+    if (step === 'payment') {
+      // Save order to Supabase
+      try {
+        await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: user?.id, items: cartItems }),
+        });
+        localStorage.removeItem('checkout-cart');
+      } catch {}
+    }
+
     setTimeout(() => {
       if (step === 'shipping') {
         setStep('payment');

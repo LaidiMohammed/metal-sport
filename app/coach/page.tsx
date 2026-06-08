@@ -4,6 +4,7 @@ import { Navbar } from '@/components/navbar';
 import { Button } from '@/components/ui/button';
 import { useAuthProtected } from '@/hooks/useAuthProtected';
 import { useState, useRef, useEffect } from 'react';
+import { useStore } from '@/lib/store';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Send, RefreshCw, Plus, X, Sparkles } from 'lucide-react';
 
@@ -19,6 +20,7 @@ const WELCOME = 'Hey there! I\'m your AI fitness coach. Upload a photo for form/
 
 export default function CoachPage() {
   useAuthProtected();
+  const user = useStore((s) => s.user);
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -29,6 +31,41 @@ export default function CoachPage() {
   const [messages, setMessages] = useState<Message[]>([
     { id: '1', role: 'assistant', content: WELCOME, timestamp: new Date() },
   ]);
+
+  // Load chat history from Supabase
+  useEffect(() => {
+    if (!user?.id) return;
+    fetch(`/api/coach-messages?userId=${user.id}`)
+      .then(r => r.ok ? r.json() : [])
+      .then(data => {
+        if (data.length) {
+          setMessages(data.map((m: any) => ({
+            id: m.id,
+            role: m.role,
+            content: m.content,
+            image: m.image || undefined,
+            timestamp: new Date(m.created_at),
+          })));
+        }
+      })
+      .catch(() => {});
+  }, [user?.id]);
+
+  const saveMessage = async (msg: Message) => {
+    if (!user?.id) return;
+    try {
+      await fetch('/api/coach-messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: user.id,
+          role: msg.role,
+          content: msg.content,
+          image: msg.image,
+        }),
+      });
+    } catch {}
+  };
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -63,6 +100,7 @@ export default function CoachPage() {
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    saveMessage(userMessage);
     setInput('');
     setSelectedImage(null);
     setLoading(true);
@@ -84,19 +122,23 @@ export default function CoachPage() {
       });
 
       const data = await apiRes.json();
-      setMessages((prev) => [...prev, {
+      const reply: Message = {
         id: String(Date.now() + 1),
         role: 'assistant',
         content: data.reply || 'Sorry, I could not process that.',
         timestamp: new Date(),
-      }]);
+      };
+      setMessages((prev) => [...prev, reply]);
+      saveMessage(reply);
     } catch {
-      setMessages((prev) => [...prev, {
+      const errMsg: Message = {
         id: String(Date.now() + 1),
         role: 'assistant',
         content: 'Sorry, I ran into an error. Please try again.',
         timestamp: new Date(),
-      }]);
+      };
+      setMessages((prev) => [...prev, errMsg]);
+      saveMessage(errMsg);
     }
 
     setLoading(false);
