@@ -340,7 +340,9 @@ export default function AuthPage() {
               {/* Google */}
               <button
                 type="button"
-                onClick={quickAdminLogin}
+                onClick={async () => {
+                  await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + '/auth/callback' } });
+                }}
                 disabled={loading}
                 className="flex items-center justify-center gap-3 w-full py-2.5 px-4 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 rounded-xl text-sm font-semibold text-slate-700 shadow-sm transition-all duration-200 disabled:opacity-50"
               >
