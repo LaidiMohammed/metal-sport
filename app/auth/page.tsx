@@ -151,7 +151,7 @@ export default function AuthPage() {
         const profile = await fetchProfile(data.user.id);
         if (profile) setUser(profile);
       }
-      const isAdmin = loginEmailAddr === 'mutd3705@gmail.com';
+      const isAdmin = loginEmailAddr === 'hamada.laidi.14@gmail.com';
       setTimeout(() => router.push(isAdmin ? '/admin' : '/?justLoggedIn=true'), 300);
     } catch (e: any) {
       setError(e.message || 'Invalid email or password');
@@ -231,7 +231,7 @@ export default function AuthPage() {
   };
 
   const quickAdminLogin = async () => {
-    await performLogin('mutd3705@gmail.com', 'Admin123!');
+    await performLogin('hamada.laidi.14@gmail.com', 'ldldld');
   };
 
   const gymLevels = [
