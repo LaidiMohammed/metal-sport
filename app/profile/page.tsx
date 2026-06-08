@@ -37,6 +37,14 @@ export default function ProfilePage() {
     );
   }
 
+  // Stats from profile
+  const stats = [
+    { label: 'Height', value: user.height ? `${user.height} cm` : '-', icon: '📏' },
+    { label: 'Weight', value: user.weight ? `${user.weight} kg` : '-', icon: '⚖️' },
+    { label: 'Age', value: user.age ?? '-', icon: '🎂' },
+    { label: 'Sessions Left', value: user.sessionsLeft ?? '-', icon: '🏋️' },
+  ];
+
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -85,28 +93,14 @@ export default function ProfilePage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12">
-          <div className="p-6 rounded-lg border border-foreground/10 bg-card">
-            <p className="text-sm text-foreground/60 mb-2">Total Workouts</p>
-            <p className="text-3xl font-bold text-foreground">24</p>
-            <p className="text-xs text-foreground/50 mt-2">+3 this week</p>
-          </div>
-          <div className="p-6 rounded-lg border border-foreground/10 bg-card">
-            <p className="text-sm text-foreground/60 mb-2">Workout Streak</p>
-            <p className="text-3xl font-bold text-accent">7 days</p>
-            <p className="text-xs text-foreground/50 mt-2">Keep it up!</p>
-          </div>
-          <div className="p-6 rounded-lg border border-foreground/10 bg-card">
-            <p className="text-sm text-foreground/60 mb-2">Total Duration</p>
-            <p className="text-3xl font-bold text-foreground">52h 30m</p>
-            <p className="text-xs text-foreground/50 mt-2">Goal: 60h</p>
-          </div>
-          <div className="p-6 rounded-lg border border-foreground/10 bg-card">
-            <p className="text-sm text-foreground/60 mb-2">Calories Burned</p>
-            <p className="text-3xl font-bold text-foreground">12,450</p>
-            <p className="text-xs text-foreground/50 mt-2">This month</p>
-          </div>
+        {/* Stats Grid from profile data */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+          {stats.map((s) => (
+            <div key={s.label} className="p-6 rounded-lg border border-foreground/10 bg-card">
+              <p className="text-sm text-foreground/60 mb-2">{s.icon} {s.label}</p>
+              <p className="text-3xl font-bold text-foreground">{s.value}</p>
+            </div>
+          ))}
         </div>
 
         {/* Recent Activity */}
@@ -140,7 +134,9 @@ export default function ProfilePage() {
             <h3 className="text-xl font-bold text-foreground mb-4">Membership Plan</h3>
             <div className="space-y-3 mb-6">
               <p className="text-foreground">Current: <span className="font-bold capitalize">{user.membership} Plan</span></p>
-              <p className="text-foreground/60">Renews on February 15, 2024</p>
+              {user.sessionsLeft !== undefined && <p className="text-foreground/60">Sessions remaining: <span className="font-bold text-foreground">{user.sessionsLeft}</span></p>}
+              {user.expirationDate && <p className="text-foreground/60">Expires: {new Date(user.expirationDate).toLocaleDateString()}</p>}
+              {user.joinDate && <p className="text-foreground/60">Member since: {new Date(user.joinDate).toLocaleDateString()}</p>}
             </div>
             {user.membership !== 'elite' && (
               <Button className="w-full bg-accent text-accent-foreground hover:bg-accent/90">

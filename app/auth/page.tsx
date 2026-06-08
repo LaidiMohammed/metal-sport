@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useStore } from '@/lib/store';
+import { supabase } from '@/lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Mail,
@@ -50,11 +51,33 @@ function GoogleIcon() {
   );
 }
 
+async function fetchProfile(userId: string) {
+  const { data } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
+  if (!data) return null;
+  return {
+    id: data.id,
+    name: data.name,
+    lastName: data.last_name || '',
+    email: data.email,
+    membership: data.membership,
+    role: data.role,
+    isActive: data.is_active,
+    isSpam: data.is_spam,
+    height: data.height,
+    weight: data.weight,
+    age: data.age,
+    sex: data.sex,
+    joinDate: data.join_date,
+    revenue: data.revenue,
+    sessionsLeft: data.sessions_left,
+    expirationDate: data.expiration_date,
+    avatar: data.avatar,
+  };
+}
+
 export default function AuthPage() {
   const router  = useRouter();
   const setUser = useStore((s) => s.setUser);
-  const addUser = useStore((s) => s.addUser);
-  const allUsers = useStore((s) => s.allUsers);
 
   // ── Mode ──────────────────────────────────────────────────────────────────
   const [isLogin, setIsLogin] = useState(true);
@@ -98,63 +121,57 @@ export default function AuthPage() {
     return () => clearInterval(t);
   }, []);
 
+  // ── Supabase Auth session listener ───────────────────────────────────────
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        const profile = await fetchProfile(session.user.id);
+        if (profile) setUser(profile);
+      } else {
+        setUser(null);
+      }
+    });
+    // Check existing session
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user) {
+        const profile = await fetchProfile(session.user.id);
+        if (profile) setUser(profile);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [setUser]);
+
   // ── Auth logic ────────────────────────────────────────────────────────────
-  const performLogin = (loginEmailAddr: string, displayName: string) => {
-    setTimeout(() => {
-      const isAdmin = loginEmailAddr === 'hamada.laidi.14@gmail.com' || loginEmailAddr === 'admin@kimo.com';
-      const fullName = isAdmin ? 'Hamada Laidi' : displayName || loginEmailAddr.split('@')[0];
-      const nameParts = fullName.split(' ');
-      const newUser = {
-        id: Date.now().toString(),
-        name: nameParts[0],
-        lastName: nameParts.slice(1).join(' ') || undefined,
-        email: loginEmailAddr,
-        membership: 'premium',
-        role: isAdmin ? 'admin' : 'user',
-        isActive: true,
-        sessionsLeft: 30,
-        expirationDate: new Date(Date.now() + 365 * 86400000).toISOString().split('T')[0],
-      };
-      setUser(newUser);
-      if (!allUsers.find(u => u.email === loginEmailAddr)) addUser(newUser as any);
+  const performLogin = async (loginEmailAddr: string, password: string) => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email: loginEmailAddr, password });
+      if (error) throw error;
+      if (data.user) {
+        const profile = await fetchProfile(data.user.id);
+        if (profile) setUser(profile);
+      }
+      const isAdmin = loginEmailAddr === 'mutd3705@gmail.com';
       setTimeout(() => router.push(isAdmin ? '/admin' : '/?justLoggedIn=true'), 300);
-    }, 1200);
+    } catch (e: any) {
+      setError(e.message || 'Invalid email or password');
+    }
+    setLoading(false);
   };
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
     if (!loginEmail || !loginPass) { setError('Please fill in all fields'); return; }
-    setSendingCode(true);
-    setVerifyEmail(loginEmail);
-    setVerifyName('');
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    setVerifyCode(code);
-    console.log(`[DEV] Verification code for ${loginEmail}: ${code}`);
-    try {
-      const res = await fetch('/api/send-code', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: loginEmail, code }),
-      });
-      if (!res.ok) { const body = await res.json().catch(()=>({})); throw new Error(body?.error || 'Email delivery issue'); }
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Email delivery issue');
-      setSendingCode(false);
-      setVerifyStep(true);
-      setUserCode(['','','','','','']);
-      return;
-    }
-    setSendingCode(false);
-    setVerifyStep(true);
-    setUserCode(['','','','','','']);
+    await performLogin(loginEmail, loginPass);
   };
 
-  const handleVerifyCode = () => {
+  const handleVerifyCode = async () => {
     if (userCode.join('') === verifyCode) {
       setVerifyStep(false);
       setLoading(true);
-      performLogin(verifyEmail, verifyName);
+      // Sign in the user that just signed up
+      await performLogin(verifyEmail, password);
     } else {
       setError('Incorrect code. Please try again.');
     }
@@ -196,35 +213,25 @@ export default function AuthPage() {
     e.preventDefault();
     setError('');
     if (!age || !height || !weight || !gymLevel) { setError('Please fill in all fields'); return; }
-    setSendingCode(true);
-    const fullName = `${firstName} ${lastName}`;
-    setVerifyEmail(email);
-    setVerifyName(fullName);
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    setVerifyCode(code);
-    console.log(`[DEV] Verification code for ${email}: ${code}`);
+    setLoading(true);
     try {
-      const res = await fetch('/api/send-code', {
+      const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, code }),
+        body: JSON.stringify({ email, password, name: firstName, lastName }),
       });
-      if (!res.ok) { const body = await res.json().catch(()=>({})); throw new Error(body?.error || 'Server error'); }
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Server error');
-      setSendingCode(false);
-      setStep(3);
-      setUserCode(['','','','','','']);
-      return;
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Signup failed');
+      // Auto sign in after signup
+      await performLogin(email, password);
+    } catch (e: any) {
+      setError(e.message || 'Signup failed');
     }
-    setSendingCode(false);
-    setStep(3);
-    setUserCode(['','','','','','']);
+    setLoading(false);
   };
 
-  const quickAdminLogin = () => {
-    setLoading(true);
-    performLogin('hamada.laidi.14@gmail.com', 'Hamada');
+  const quickAdminLogin = async () => {
+    await performLogin('mutd3705@gmail.com', 'Admin123!');
   };
 
   const gymLevels = [

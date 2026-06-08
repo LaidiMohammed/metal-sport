@@ -3,7 +3,7 @@
 import { Navbar } from '@/components/navbar';
 import { Button } from '@/components/ui/button';
 import { useAuthProtected } from '@/hooks/useAuthProtected';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { ShoppingCart, FlaskRound, Dumbbell, Crown, Shirt, Backpack, Plus, Minus, Trash2, X, ImageOff } from 'lucide-react';
 import Link from 'next/link';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
@@ -21,7 +21,10 @@ const CATEGORIES: { key: Product['category'] | 'all'; label: string; icon: typeo
 export default function ShopPage() {
   useAuthProtected();
   const products = useStore((s) => s.products);
+  const fetchProducts = useStore((s) => s.fetchProducts);
   const [category, setCategory] = useState<Product['category'] | 'all'>('all');
+
+  useEffect(() => { fetchProducts(); }, [fetchProducts]);
   const [cart, setCart] = useState<{ product: Product; quantity: number }[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [imgErrors, setImgErrors] = useState<Record<string, boolean>>({});

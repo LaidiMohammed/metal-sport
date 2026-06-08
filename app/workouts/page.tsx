@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import { Navbar } from '@/components/navbar';
 import { InteractiveAnatomyViewer } from '@/components/interactive-anatomy-viewer';
 import { useAuthProtected } from '@/hooks/useAuthProtected';
@@ -125,6 +125,76 @@ export default function WorkoutsPage() {
   const [editingExerciseIds, setEditingExerciseIds] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // ── Supabase sync ────────────────────────────────────────────────────────
+  const fetchWorkouts = async () => {
+    if (!user?.id) return;
+    try {
+      const res = await fetch(`/api/workouts?userId=${user.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        const completed = data.filter((w: any) => w.completed).map((w: any) => ({
+          id: w.id,
+          name: w.exercise_id,
+          date: w.date?.split('T')[0] || '',
+          duration: w.duration || 0,
+          exercises: 1,
+          completed: true,
+          calories: 0,
+        }));
+        const planned = data.filter((w: any) => !w.completed).map((w: any) => ({
+          id: w.id,
+          date: w.date?.split('T')[0] || '',
+          time: '09:00',
+          planId: '1',
+          name: w.exercise_id,
+          exerciseIds: [],
+        }));
+        if (completed.length) setLogs(completed);
+        if (planned.length) setScheduled(planned);
+      }
+    } catch {}
+  };
+
+  const saveCompletedWorkout = async (name: string, duration: number) => {
+    if (!user?.id) return;
+    try {
+      const res = await fetch('/api/workouts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: user.id,
+          exercise_id: name,
+          duration,
+          reps: 0,
+          completed: true,
+          date: new Date().toISOString(),
+        }),
+      });
+      if (res.ok) fetchWorkouts();
+    } catch {}
+  };
+
+  const saveScheduledWorkout = async (date: string, name: string) => {
+    if (!user?.id) return;
+    try {
+      const res = await fetch('/api/workouts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: user.id,
+          exercise_id: name,
+          duration: 0,
+          reps: 0,
+          completed: false,
+          date,
+        }),
+      });
+      if (res.ok) fetchWorkouts();
+    } catch {}
+  };
+
+  useEffect(() => { fetchWorkouts(); }, [user?.id]);
+
   const getExercisesForPlan = (plan: WorkoutPlan) => {
     const keywords = plan.muscles.flatMap(m => m.toLowerCase().split(' & ').flatMap(s => s.split(' ')));
     return exercises.filter(e => {
@@ -159,6 +229,7 @@ export default function WorkoutsPage() {
       name: plan.name,
       exerciseIds: editingExerciseIds,
     };
+    if (!editingScheduleId) saveScheduledWorkout(selectedDate, plan.name);
     setScheduled(editingScheduleId ? scheduled.map(s => s.id === editingScheduleId ? newSched : s) : [...scheduled, newSched]);
     setEditingScheduleId(null);
     setSelectedPlanId(null);
@@ -166,7 +237,10 @@ export default function WorkoutsPage() {
     setSearchQuery('');
   };
 
-  const deleteSchedule = (id: string) => setScheduled(scheduled.filter(s => s.id !== id));
+  const deleteSchedule = async (id: string) => {
+    setScheduled(scheduled.filter(s => s.id !== id));
+    await fetch(`/api/workouts?id=${id}`, { method: 'DELETE' });
+  };
   const editSchedule = (s: ScheduledWorkout) => {
     setSelectedDate(s.date);
     setSelectedPlanId(s.planId);
@@ -914,12 +988,26 @@ export default function WorkoutsPage() {
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
-                  style={{ padding: '16px', background: 'rgba(0,212,170,0.08)', border: '1px solid rgba(0,212,170,0.2)', borderRadius: 12, marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}
+                  style={{ padding: '16px', background: 'rgba(0,212,170,0.08)', border: '1px solid rgba(0,212,170,0.2)', borderRadius: 12, marginBottom: 16 }}
                 >
-                  <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}>
-                    <Timer style={{ width: 20, height: 20, color: '#00d4aa' }} />
-                  </motion.div>
-                  <span style={{ color: '#00d4aa', fontWeight: 700, fontSize: 16 }}>Workout in progress…</span>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 12 }}>
+                    <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}>
+                      <Timer style={{ width: 20, height: 20, color: '#00d4aa' }} />
+                    </motion.div>
+                    <span style={{ color: '#00d4aa', fontWeight: 700, fontSize: 16 }}>Workout in progress…</span>
+                  </div>
+                  <button
+                    onClick={async () => {
+                      if (!activePlan) return;
+                      await saveCompletedWorkout(activePlan.name, activePlan.duration);
+                      setLogs(prev => [{ id: Date.now().toString(), name: activePlan.name, date: new Date().toISOString().split('T')[0], duration: activePlan.duration, exercises: activePlan.exercises, completed: true, calories: activePlan.calories }, ...prev]);
+                      setTimerActive(false);
+                      setActivePlan(null);
+                    }}
+                    style={{ width: '100%', padding: '10px', borderRadius: 10, border: 'none', background: 'rgba(0,212,170,0.2)', color: '#00d4aa', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
+                  >
+                    Complete & Save
+                  </button>
                 </motion.div>
               )}
 

@@ -93,6 +93,8 @@ export function AdminDashboard() {
   const addProduct = useStore((state) => state.addProduct);
   const updateProduct = useStore((state) => state.updateProduct);
   const deleteProduct = useStore((state) => state.deleteProduct);
+  const fetchProducts = useStore((state) => state.fetchProducts);
+  const fetchUsers = useStore((state) => state.fetchUsers);
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [editProduct, setEditProduct] = useState<Product | null>(null);
   const [productSearch, setProductSearch] = useState('');
@@ -163,6 +165,8 @@ export function AdminDashboard() {
       stopScanner();
     }
   }, [activeSection, startScanner, stopScanner]);
+
+  useEffect(() => { fetchProducts(); fetchUsers(); }, []);
 
   useEffect(() => {
     const handleHeaderScroll = () => {
@@ -1372,7 +1376,7 @@ export function AdminDashboard() {
                             <button onClick={() => { setEditProduct(product); setShowAddProduct(true); }} className="p-1.5 rounded-lg hover:bg-foreground/5 text-foreground/50 hover:text-accent transition-colors">
                               <Eye className="w-4 h-4" />
                             </button>
-                            <button onClick={() => deleteProduct(product.id)} className="p-1.5 rounded-lg hover:bg-red-500/10 text-foreground/50 hover:text-red-400 transition-colors">
+                            <button onClick={async () => { await fetch(`/api/products/${product.id}`, { method: 'DELETE' }); fetchProducts(); }} className="p-1.5 rounded-lg hover:bg-red-500/10 text-foreground/50 hover:text-red-400 transition-colors">
                               <Trash2 className="w-4 h-4" />
                             </button>
                           </div>
@@ -1596,6 +1600,7 @@ export function AdminDashboard() {
 function AddProductModal({ isOpen, onClose, editProduct }: { isOpen: boolean; onClose: () => void; editProduct: Product | null }) {
   const addProduct = useStore((s) => s.addProduct);
   const updateProduct = useStore((s) => s.updateProduct);
+  const fetchProducts = useStore((s) => s.fetchProducts);
   const [form, setForm] = useState({
     name: '',
     description: '',
@@ -1605,6 +1610,7 @@ function AddProductModal({ isOpen, onClose, editProduct }: { isOpen: boolean; on
     stock: 0,
     specs: '',
   });
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (editProduct) {
@@ -1622,11 +1628,11 @@ function AddProductModal({ isOpen, onClose, editProduct }: { isOpen: boolean; on
     }
   }, [editProduct, isOpen]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name || !form.price) return;
-    const product: Product = {
-      id: editProduct?.id || String(Date.now()),
+    setSaving(true);
+    const body = {
       name: form.name,
       description: form.description,
       price: form.price,
@@ -1634,13 +1640,16 @@ function AddProductModal({ isOpen, onClose, editProduct }: { isOpen: boolean; on
       images: form.images.split('\n').filter(Boolean),
       stock: form.stock,
       specs: form.specs.split('\n').filter(Boolean),
-      createdAt: editProduct?.createdAt || new Date().toISOString().split('T')[0],
     };
-    if (editProduct) {
-      updateProduct(editProduct.id, product);
-    } else {
-      addProduct(product);
-    }
+    try {
+      if (editProduct) {
+        await fetch(`/api/products/${editProduct.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      } else {
+        await fetch('/api/products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      }
+      await fetchProducts();
+    } catch {}
+    setSaving(false);
     onClose();
   };
 
@@ -1704,7 +1713,7 @@ function AddProductModal({ isOpen, onClose, editProduct }: { isOpen: boolean; on
           </div>
           <div className="flex gap-3 pt-2">
             <Button type="button" variant="outline" className="flex-1" onClick={onClose}>Cancel</Button>
-            <Button type="submit" className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90">{editProduct ? 'Update' : 'Create'}</Button>
+            <Button type="submit" className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90" disabled={saving}>{saving ? 'Saving...' : editProduct ? 'Update' : 'Create'}</Button>
           </div>
         </form>
       </motion.div>
