@@ -17,45 +17,45 @@ const FEATURES = [
 ];
 
 const sponsors = [
-  { name: 'Bougelaz', letter: 'B', bg: 'rgba(0,120,200,0.2)', fg: '#4a9eff' },
-  { name: 'Ifri', letter: 'I', bg: 'rgba(0,200,160,0.2)', fg: '#00c8a0' },
-  { name: 'Azro', letter: 'A', bg: 'rgba(255,100,50,0.2)', fg: '#ff6a33' },
-  { name: 'Lala Khdija', letter: 'LK', bg: 'rgba(200,50,100,0.2)', fg: '#c83264' },
-  { name: 'F&H Nutrition', letter: 'F', bg: 'rgba(100,50,200,0.2)', fg: '#6632c8' },
-  { name: 'Reborn', letter: 'R', bg: 'rgba(200,200,50,0.2)', fg: '#c8c832' },
-  { name: 'Creapure', letter: 'C', bg: 'rgba(50,200,200,0.2)', fg: '#32c8c8' },
-  { name: 'On Sport', letter: 'OS', bg: 'rgba(255,200,50,0.2)', fg: '#ffc832' },
-  { name: 'Izem', letter: 'I', bg: 'rgba(255,180,0,0.2)', fg: '#ffb400' },
-  { name: 'RedBull', letter: 'RB', bg: 'rgba(200,0,0,0.2)', fg: '#c80000' },
-  { name: 'Mark Nutrition', letter: 'M', bg: 'rgba(255,80,80,0.2)', fg: '#ff5050' },
-  { name: 'Power Fitness', letter: 'PF', bg: 'rgba(255,50,50,0.2)', fg: '#ff3232' },
-  { name: 'Technogym', letter: 'T', bg: 'rgba(0,80,200,0.2)', fg: '#0050c8' },
-  { name: 'Hammer Strength', letter: 'HS', bg: 'rgba(200,50,50,0.2)', fg: '#c83232' },
-  { name: 'Life Fitness', letter: 'LF', bg: 'rgba(0,150,100,0.2)', fg: '#009664' },
-  { name: 'Panatta', letter: 'P', bg: 'rgba(200,0,0,0.2)', fg: '#c80000' },
-  { name: 'Matrix', letter: 'MX', bg: 'rgba(50,50,200,0.2)', fg: '#3232c8' },
-  { name: 'Realleader', letter: 'RL', bg: 'rgba(200,100,0,0.2)', fg: '#c86400' },
-  { name: 'Kettler', letter: 'K', bg: 'rgba(0,100,150,0.2)', fg: '#006496' },
-  { name: 'Optimum Nutrition', letter: 'ON', bg: 'rgba(200,150,0,0.2)', fg: '#c89600' },
-  { name: 'Scitec Nutrition', letter: 'S', bg: 'rgba(100,0,200,0.2)', fg: '#6400c8' },
-  { name: 'QNT', letter: 'Q', bg: 'rgba(0,200,100,0.2)', fg: '#00c864' },
-  { name: 'MyProtein', letter: 'MP', bg: 'rgba(200,0,100,0.2)', fg: '#c80064' },
-  { name: 'Weider', letter: 'W', bg: 'rgba(50,50,200,0.2)', fg: '#3232c8' },
-  { name: 'BioTech USA', letter: 'B', bg: 'rgba(0,150,200,0.2)', fg: '#0096c8' },
-  { name: 'Nutrend', letter: 'N', bg: 'rgba(150,200,0,0.2)', fg: '#96c800' },
-  { name: 'Dymatize', letter: 'D', bg: 'rgba(200,50,150,0.2)', fg: '#c83296' },
-  { name: 'BSN', letter: 'B', bg: 'rgba(50,150,200,0.2)', fg: '#3296c8' },
-  { name: 'Gaspari', letter: 'G', bg: 'rgba(200,100,50,0.2)', fg: '#c86432' },
-  { name: 'Applied Nutrition', letter: 'AN', bg: 'rgba(0,100,100,0.2)', fg: '#006464' },
-  { name: 'MuscleTech', letter: 'MT', bg: 'rgba(100,100,200,0.2)', fg: '#6464c8' },
-  { name: 'Gym80', letter: 'G', bg: 'rgba(80,80,80,0.2)', fg: '#888' },
-  { name: 'Proform', letter: 'P', bg: 'rgba(200,50,0,0.2)', fg: '#c83200' },
-  { name: 'NordicTrack', letter: 'NT', bg: 'rgba(0,50,150,0.2)', fg: '#003296' },
-  { name: 'BH Fitness', letter: 'BH', bg: 'rgba(150,150,0,0.2)', fg: '#969600' },
-  { name: 'Adidas', bg: 'transparent', fg: '#fff', svg: `<svg viewBox="0 0 284.3 276.4" style="height:20px;fill:rgba(255,255,255,0.4)"><path d="M262.9,128.7c-1.8,3.5-4.9,8.2-7.7,11.1H22.7c-1.8-2.2-5.8-7.3-7.4-11.1H262.9z"/><path d="M246.1,151.2H39.3c3.3,4,6.8,7.5,10.6,10.1h184.6C239.2,158.7,243.4,155.2,246.1,151.2"/><path d="M220.6,172h-56.8c-1.6,9-1.6,17.4-1.6,23.4C178.8,194.3,200.6,186.8,220.6,172"/><path d="M284,55.3c-25.9,1.6-63.1,19-87.2,47.3c-4.4,5.1-8.4,10.1-11.5,15.5h83.1C279.8,95.7,285.6,73.4,284,55.3"/><path d="M122.8,195.4c0.3-5.9,0.3-14.3-0.9-23.4H64.7C85.1,186.8,106.9,194.3,122.8,195.4"/><path d="M142.7,197.2c6-6.2,12.2-14.6,17.7-25.2h-35.6C130.8,182.6,136.3,191,142.7,197.2"/><path d="M100.3,118c-3.1-5.3-7.3-10.4-11.5-15.5C64.7,74.3,27.3,56.8,2,55.3c-1.8,18.1,3.9,40.4,15,62.7H100.3z"/><path d="M178.8,118c0.5-6.4,1.1-12.6,1.1-19.9c0-39.4-17.7-80-37.1-98.1c-19.6,18.1-36.9,58.7-36.9,98.1c0,7.3,0,13.5,1.1,19.9H178.8z"/></svg>` },
-  { name: 'Nike', bg: 'transparent', fg: '#fff', svg: `<svg viewBox="135.5 361.38 1000 356.39" style="height:18px;fill:rgba(255,255,255,0.4)"><path d="M245.8075 717.62406c-29.79588-1.1837-54.1734-9.3368-73.23459-24.4796-3.63775-2.8928-12.30611-11.5663-15.21427-15.2245-7.72958-9.7193-12.98467-19.1785-16.48977-29.6734-10.7857-32.3061-5.23469-74.6989 15.87753-121.2243 18.0765-39.8316 45.96932-79.3366 94.63252-134.0508 7.16836-8.0511 28.51526-31.5969 28.65302-31.5969.051 0-1.11225 2.0153-2.57652 4.4694-12.65304 21.1938-23.47957 46.158-29.37751 67.7703-9.47448 34.6785-8.33163 64.4387 3.34693 87.5151 8.05611 15.898 21.86731 29.6684 37.3979 37.2806 27.18874 13.3214 66.9948 14.4235 115.60699 3.2245 3.34694-.7755 169.19363-44.801 368.55048-97.8366 199.35686-53.0408 362.49439-96.4029 362.51989-96.3672.056.046-463.16259 198.2599-703.62654 301.0914-38.08158 16.2806-48.26521 20.3928-66.16827 26.6785-45.76525 16.0714-86.76008 23.7398-119.89779 22.4235z"/></svg>` },
-  { name: 'Macroh', letter: 'M', bg: 'rgba(220,50,50,0.2)', fg: '#dc3232' },
-  { name: 'Hummel', bg: 'transparent', fg: '#fff', svg: `<svg viewBox="0 0 400 120" style="height:22px;fill:rgba(255,255,255,0.4)"><path d="M30 95 L70 25 L110 95 L150 25 L190 95 L230 25 L270 95 L310 25 L350 95" stroke="rgba(255,255,255,0.4)" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>` },
+  { name: 'Bougelaz', color: '#4a9eff' },
+  { name: 'Ifri', color: '#00c8a0' },
+  { name: 'Azro', color: '#ff6a33' },
+  { name: 'Lala Khdija', color: '#c83264' },
+  { name: 'F&H Nutrition', color: '#6632c8' },
+  { name: 'Reborn', color: '#c8c832' },
+  { name: 'Creapure', color: '#32c8c8' },
+  { name: 'On Sport', color: '#ffc832' },
+  { name: 'Izem', color: '#ffb400' },
+  { name: 'RedBull', color: '#c80000' },
+  { name: 'Mark Nutrition', color: '#ff5050' },
+  { name: 'Power Fitness', color: '#ff3232' },
+  { name: 'Technogym', color: '#0050c8' },
+  { name: 'Hammer Strength', color: '#c83232' },
+  { name: 'Life Fitness', color: '#009664' },
+  { name: 'Panatta', color: '#c80000' },
+  { name: 'Matrix', color: '#3232c8' },
+  { name: 'Realleader', color: '#c86400' },
+  { name: 'Kettler', color: '#006496' },
+  { name: 'Optimum Nutrition', color: '#c89600' },
+  { name: 'Scitec Nutrition', color: '#6400c8' },
+  { name: 'QNT', color: '#00c864' },
+  { name: 'MyProtein', color: '#c80064' },
+  { name: 'Weider', color: '#3232c8' },
+  { name: 'BioTech USA', color: '#0096c8' },
+  { name: 'Nutrend', color: '#96c800' },
+  { name: 'Dymatize', color: '#c83296' },
+  { name: 'BSN', color: '#3296c8' },
+  { name: 'Gaspari', color: '#c86432' },
+  { name: 'Applied Nutrition', color: '#006464' },
+  { name: 'MuscleTech', color: '#6464c8' },
+  { name: 'Macroh', color: '#00b478' },
+  { name: 'Proform', color: '#9632c8' },
+  { name: 'NordicTrack', color: '#329632' },
+  { name: 'BH Fitness', color: '#c89600' },
+  { name: 'Gym80', color: '#969696' },
+  { name: 'Adidas', color: '#003264', logo: `<svg viewBox="0 0 48 30" fill="none"><path d="M0 28L10 2h6L4 28H0zm12 0L24 2h6L16 28h-4zm14 0L38 2h6L30 28h-4z" fill="currentColor"/></svg>` },
+  { name: 'Nike', color: '#c8c8c8', logo: `<svg viewBox="0 0 48 30" fill="none"><path d="M48 2C32 10 10 22 0 30c16-6 34-16 48-28z" fill="currentColor"/></svg>` },
+  { name: 'Hummel', color: '#c83232', logo: `<svg viewBox="0 0 48 30" fill="none"><path d="M2 4h10l4 8 4-8h10l-8 16H20l-4-8-4 8H0l2-4h4l2-4H4l2-4h4l2-4H2V4zm32 0h12l-6 16h-6l2-4h2l2-4h-6l2-4h6l-2-4h-6V4z" fill="currentColor"/></svg>` },
 ];
 
 export default function Home() {
@@ -293,35 +293,33 @@ export default function Home() {
 
       {/* ─── SPONSORS 3 ROWS ─── */}
       {(() => {
-        const localRow = [sponsors[0],sponsors[1],sponsors[2],sponsors[3],sponsors[4],sponsors[5],sponsors[6],sponsors[7],sponsors[8],sponsors[9],sponsors[10],sponsors[11],sponsors[35]];
-        const nutRow = [sponsors[19],sponsors[20],sponsors[21],sponsors[22],sponsors[23],sponsors[24],sponsors[25],sponsors[26],sponsors[27],sponsors[28],sponsors[29],sponsors[30]];
-        const machRow = [sponsors[12],sponsors[13],sponsors[14],sponsors[15],sponsors[16],sponsors[17],sponsors[18],sponsors[31],sponsors[32],sponsors[33],sponsors[34],sponsors[36],sponsors[37],sponsors[38]];
+        const third = Math.ceil(sponsors.length / 3);
         const rows = [
-          { items: localRow, speed: 18, label: 'LOCAL PARTNERS' },
-          { items: nutRow, speed: 22, label: 'NUTRITION SPONSORS' },
-          { items: machRow, speed: 16, label: 'EQUIPMENT PARTNERS' },
+          sponsors.slice(0, third),
+          sponsors.slice(third, third * 2),
+          sponsors.slice(third * 2),
         ];
         return (
           <section style={{ padding: '24px 0 8px', background: 'rgba(5,10,8,0.95)', borderTop: '1px solid rgba(0,200,160,0.08)', borderBottom: '1px solid rgba(0,200,160,0.08)', overflow: 'hidden' }}>
             <p style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 9, letterSpacing: 4, textTransform: 'uppercase', color: 'rgba(0,200,160,0.3)', textAlign: 'center', marginBottom: 16 }}>Official Partners</p>
-            {rows.map((row, ri) => (
+            {rows.map((items, ri) => (
               <div key={ri} style={{ marginBottom: ri < 2 ? 10 : 0 }}>
                 <div style={{ overflow: 'hidden', maskImage: 'linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)' }}>
                   <motion.div
                     style={{ display: 'flex', gap: 32, padding: '0 20px', whiteSpace: 'nowrap', alignItems: 'center' }}
                     animate={{ x: ri % 2 === 0 ? ['0%', '-50%'] : ['-50%', '0%'] }}
-                    transition={{ duration: row.speed, repeat: Infinity, ease: 'linear' }}
+                    transition={{ duration: [18, 22, 16][ri], repeat: Infinity, ease: 'linear' }}
                   >
-                    {[...row.items, ...row.items].map((s, i) => (
+                    {[...items, ...items].map((s, i) => (
                       <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 16px', borderRight: '1px solid rgba(255,255,255,0.04)' }}>
-                        {s.svg ? (
-                          <div style={{ width: 32, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.45 }}>
-                            <div dangerouslySetInnerHTML={{ __html: s.svg }} style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} />
+                        {s.logo ? (
+                          <div style={{ width: 32, height: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.5 }}>
+                            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: s.color || 'rgba(255,255,255,0.25)' }} dangerouslySetInnerHTML={{ __html: s.logo }} />
                           </div>
                         ) : (
-                          <div style={{ width: 26, height: 26, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: s.bg || 'rgba(255,255,255,0.06)', fontSize: 11, fontWeight: 800, color: s.fg || 'rgba(255,255,255,0.3)', flexShrink: 0 }}>{s.letter}</div>
+                          <span style={{ fontSize: 15, fontWeight: 700, fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: 1.5, color: s.color, opacity: 0.4 }}>{s.name}</span>
                         )}
-                        <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 14, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.18)' }}>{s.name}</span>
+                        {s.logo && <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 13, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', color: s.color, opacity: 0.35 }}>{s.name}</span>}
                       </div>
                     ))}
                   </motion.div>
