@@ -607,17 +607,13 @@ export function AdminDashboard() {
                       <button onClick={() => setShowAddModal(false)} className="flex-1 py-2.5 rounded-lg border border-foreground/10 text-foreground/70 text-sm font-semibold hover:bg-foreground/[0.05] transition-colors">
                         Cancel
                       </button>
-                      <button onClick={() => {
+                      <button onClick={async () => {
                         if (!newClient.name.trim() || !newClient.email.trim()) return;
-                        addUser({
-                          id: `${Date.now()}`,
+                        await addUser({
                           name: newClient.name.trim(),
                           lastName: newClient.lastName.trim() || undefined,
                           email: newClient.email.trim(),
                           membership: newClient.membership,
-                          role: 'user',
-                          isActive: true,
-                          isSpam: false,
                           age: newClient.age ? Number(newClient.age) : undefined,
                           sex: newClient.sex,
                           height: newClient.height ? Number(newClient.height) : undefined,
@@ -625,7 +621,6 @@ export function AdminDashboard() {
                           sessionsLeft: newClient.sessionsLeft ? Number(newClient.sessionsLeft) : 30,
                           expirationDate: newClient.expirationDate || new Date(Date.now() + 365*24*60*60*1000).toISOString().split('T')[0],
                           revenue: newClient.revenue ? Number(newClient.revenue) : 0,
-                          joinDate: new Date().toISOString().split('T')[0],
                         });
                         setShowAddModal(false);
                         setNewClient({ name: '', lastName: '', email: '', membership: 'free', age: '', sex: 'male', height: '', weight: '', sessionsLeft: '', expirationDate: '', revenue: '' });

@@ -55,17 +55,18 @@ export interface UserStore {
   
   // Actions
   setUser: (user: User | null) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
   addWorkoutSession: (session: WorkoutSession) => void;
   setSelectedExercise: (exerciseId: string | null) => void;
   updateCartItems: (count: number) => void;
-  addUser: (user: User) => void;
-  toggleUserActive: (userId: string) => void;
-  markUserAsSpam: (userId: string) => void;
-  removeSpam: (userId: string) => void;
-  deleteUser: (userId: string) => void;
-  updateUserInfo: (userId: string, info: Partial<User>) => void;
-  setUserRole: (userId: string, role: 'user' | 'admin') => void;
+  getAuthHeaders: () => Promise<Record<string, string> | null>;
+  addUser: (user: Partial<User>) => Promise<void>;
+  toggleUserActive: (userId: string) => Promise<void>;
+  markUserAsSpam: (userId: string) => Promise<void>;
+  removeSpam: (userId: string) => Promise<void>;
+  deleteUser: (userId: string) => Promise<void>;
+  updateUserInfo: (userId: string, info: Partial<User>) => Promise<void>;
+  setUserRole: (userId: string, role: 'user' | 'admin') => Promise<void>;
   getAllUsers: () => User[];
   fetchUsers: () => Promise<void>;
   addProduct: (product: Product) => void;
@@ -123,43 +124,92 @@ export const useStore = create<UserStore>()(
         cartItems: count,
       }),
 
-      addUser: (user) => set((state) => ({
-        allUsers: [...state.allUsers, user],
-      })),
+      getAuthHeaders: async () => {
+        const { supabase } = await import('@/lib/supabase');
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.access_token) return null;
+        return { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' };
+      },
 
-      toggleUserActive: (userId) => set((state) => ({
-        allUsers: state.allUsers.map((user) =>
-          user.id === userId ? { ...user, isActive: !user.isActive } : user
-        ),
-      })),
+      addUser: async (user) => {
+        const headers = await get().getAuthHeaders();
+        if (!headers) return;
+        try {
+          const res = await fetch('/api/users', { method: 'POST', headers, body: JSON.stringify(user) });
+          if (!res.ok) return;
+          const { user: created } = await res.json();
+          if (created) set((state) => ({ allUsers: [...state.allUsers, created] }));
+        } catch {}
+      },
 
-      markUserAsSpam: (userId) => set((state) => ({
-        allUsers: state.allUsers.map((user) =>
-          user.id === userId ? { ...user, isSpam: true } : user
-        ),
-      })),
+      toggleUserActive: async (userId) => {
+        const headers = await get().getAuthHeaders();
+        if (!headers) return;
+        const user = get().allUsers.find((u) => u.id === userId);
+        if (!user) return;
+        try {
+          await fetch(`/api/users/${userId}`, { method: 'PATCH', headers, body: JSON.stringify({ isActive: !user.isActive }) });
+          set((state) => ({
+            allUsers: state.allUsers.map((u) => u.id === userId ? { ...u, isActive: !u.isActive } : u),
+          }));
+        } catch {}
+      },
 
-      removeSpam: (userId) => set((state) => ({
-        allUsers: state.allUsers.map((user) =>
-          user.id === userId ? { ...user, isSpam: false } : user
-        ),
-      })),
+      markUserAsSpam: async (userId) => {
+        const headers = await get().getAuthHeaders();
+        if (!headers) return;
+        try {
+          await fetch(`/api/users/${userId}`, { method: 'PATCH', headers, body: JSON.stringify({ isSpam: true }) });
+          set((state) => ({
+            allUsers: state.allUsers.map((u) => u.id === userId ? { ...u, isSpam: true } : u),
+          }));
+        } catch {}
+      },
 
-      deleteUser: (userId) => set((state) => ({
-        allUsers: state.allUsers.filter((user) => user.id !== userId),
-      })),
+      removeSpam: async (userId) => {
+        const headers = await get().getAuthHeaders();
+        if (!headers) return;
+        try {
+          await fetch(`/api/users/${userId}`, { method: 'PATCH', headers, body: JSON.stringify({ isSpam: false }) });
+          set((state) => ({
+            allUsers: state.allUsers.map((u) => u.id === userId ? { ...u, isSpam: false } : u),
+          }));
+        } catch {}
+      },
 
-      updateUserInfo: (userId, info) => set((state) => ({
-        allUsers: state.allUsers.map((user) =>
-          user.id === userId ? { ...user, ...info } : user
-        ),
-      })),
+      deleteUser: async (userId) => {
+        const headers = await get().getAuthHeaders();
+        if (!headers) return;
+        try {
+          const res = await fetch(`/api/users/${userId}`, { method: 'DELETE', headers });
+          if (!res.ok) return;
+          set((state) => ({
+            allUsers: state.allUsers.filter((u) => u.id !== userId),
+          }));
+        } catch {}
+      },
 
-      setUserRole: (userId, role) => set((state) => ({
-        allUsers: state.allUsers.map((u) =>
-          u.id === userId ? { ...u, role } : u
-        ),
-      })),
+      updateUserInfo: async (userId, info) => {
+        const headers = await get().getAuthHeaders();
+        if (!headers) return;
+        try {
+          await fetch(`/api/users/${userId}`, { method: 'PATCH', headers, body: JSON.stringify(info) });
+          set((state) => ({
+            allUsers: state.allUsers.map((u) => u.id === userId ? { ...u, ...info } : u),
+          }));
+        } catch {}
+      },
+
+      setUserRole: async (userId, role) => {
+        const headers = await get().getAuthHeaders();
+        if (!headers) return;
+        try {
+          await fetch(`/api/users/${userId}`, { method: 'PATCH', headers, body: JSON.stringify({ role }) });
+          set((state) => ({
+            allUsers: state.allUsers.map((u) => u.id === userId ? { ...u, role } : u),
+          }));
+        } catch {}
+      },
 
       getAllUsers: () => get().allUsers,
 
