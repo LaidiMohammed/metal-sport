@@ -242,8 +242,8 @@ export default function WorkoutsPage() {
   };
 
   const deleteSchedule = async (id: string) => {
-    setScheduled(scheduled.filter(s => s.id !== id));
-    await fetch(`/api/workouts?id=${id}`, { method: 'DELETE' });
+    const res = await fetch(`/api/workouts?id=${id}`, { method: 'DELETE' });
+    if (res.ok) setScheduled(scheduled.filter(s => s.id !== id));
   };
   const editSchedule = (s: ScheduledWorkout) => {
     setSelectedDate(s.date);
@@ -1004,7 +1004,6 @@ export default function WorkoutsPage() {
                     onClick={async () => {
                       if (!activePlan) return;
                       await saveCompletedWorkout(activePlan.name, activePlan.duration);
-                      setLogs(prev => [{ id: Date.now().toString(), name: activePlan.name, date: new Date().toISOString().split('T')[0], duration: activePlan.duration, exercises: activePlan.exercises, completed: true, calories: activePlan.calories }, ...prev]);
                       setTimerActive(false);
                       setActivePlan(null);
                     }}
