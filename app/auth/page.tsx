@@ -87,12 +87,10 @@ export default function AuthPage() {
 
   // ── Email verification ────────────────────────────────────────────────────
   const [verifyStep,  setVerifyStep]  = useState(false);
-  const [verifyCode,  setVerifyCode]  = useState('');
   const [userCode,    setUserCode]    = useState(['','','','','','']);
   const [verifyEmail, setVerifyEmail] = useState('');
   const [verifyName,  setVerifyName]  = useState('');
   const [sendingCode, setSendingCode] = useState(false);
-  const [showDebugCode, setShowDebugCode] = useState(false);
 
   // ── Shared ────────────────────────────────────────────────────────────────
   const [loginEmail,  setLoginEmail]  = useState('');
@@ -154,37 +152,42 @@ export default function AuthPage() {
   };
 
   const handleVerifyCode = async () => {
-    if (userCode.join('') === verifyCode) {
-      setVerifyStep(false);
-      setLoading(true);
-      // Sign in the user that just signed up
-      await performLogin(verifyEmail, password);
-    } else {
-      setError('Incorrect code. Please try again.');
+    setError('');
+    const code = userCode.join('');
+    if (code.length !== 6) { setError('Please enter the full 6-digit code.'); return; }
+    setLoading(true);
+    try {
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, name: firstName, lastName, code }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Verification failed');
+      await performLogin(email, password);
+    } catch (e: any) {
+      setError(e.message || 'Verification failed');
     }
+    setLoading(false);
   };
 
   const resendCode = async () => {
     setSendingCode(true);
     setError('');
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    setVerifyCode(code);
-    console.log(`[DEV] Resent verification code for ${verifyEmail}: ${code}`);
+    setUserCode(['','','','','','']);
     try {
       const res = await fetch('/api/send-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: verifyEmail, code }),
+        body: JSON.stringify({ email: verifyEmail }),
       });
       if (!res.ok) { const body = await res.json().catch(()=>({})); throw new Error(body?.error || 'Server error'); }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Server error');
       setSendingCode(false);
-      setUserCode(['','','','','','']);
       return;
     }
     setSendingCode(false);
-    setUserCode(['','','','','','']);
   };
 
   const handleStep1 = (e: React.FormEvent<HTMLFormElement>) => {
@@ -202,17 +205,17 @@ export default function AuthPage() {
     if (!age || !height || !weight || !gymLevel) { setError('Please fill in all fields'); return; }
     setLoading(true);
     try {
-      const res = await fetch('/api/auth/signup', {
+      const res = await fetch('/api/send-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, name: firstName, lastName }),
+        body: JSON.stringify({ email }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Signup failed');
-      // Auto sign in after signup
-      await performLogin(email, password);
+      if (!res.ok) throw new Error(data.error || 'Failed to send code');
+      setVerifyEmail(email);
+      setStep(3);
     } catch (e: any) {
-      setError(e.message || 'Signup failed');
+      setError(e.message || 'Failed to send verification code');
     }
     setLoading(false);
   };
@@ -509,18 +512,7 @@ export default function AuthPage() {
                   </button>
                 </p>
 
-                <button type="button" onClick={() => setShowDebugCode(!showDebugCode)}
-                  className="text-[11px] text-slate-300 hover:text-slate-500 underline">
-                  {showDebugCode ? 'Hide code' : 'Show code'}
-                </button>
-
-                {showDebugCode && (
-                  <div className="text-center text-xs font-mono bg-slate-100 border border-slate-200 rounded-lg px-4 py-2 text-slate-700">
-                    Debug code: <strong>{verifyCode}</strong>
-                  </div>
-                )}
-
-                <button type="button" onClick={() => { setVerifyStep(false); setError(''); setVerifyCode(''); setVerifyName(''); }}
+                <button type="button" onClick={() => { setVerifyStep(false); setError(''); setVerifyName(''); }}
                   className="text-xs text-slate-400 hover:text-slate-600 underline">
                   {isLogin ? 'Back to sign in' : 'Back to sign up'}
                 </button>
@@ -831,17 +823,6 @@ export default function AuthPage() {
                       {sendingCode ? 'Sending…' : 'Resend'}
                     </button>
                   </p>
-
-                  <button type="button" onClick={() => setShowDebugCode(!showDebugCode)}
-                    className="text-[11px] text-slate-300 hover:text-slate-500 underline text-center w-full">
-                    {showDebugCode ? 'Hide code' : 'Show code'}
-                  </button>
-
-                  {showDebugCode && (
-                    <div className="text-center text-xs font-mono bg-slate-100 border border-slate-200 rounded-lg px-4 py-2 text-slate-700">
-                      Debug code: <strong>{verifyCode}</strong>
-                    </div>
-                  )}
 
                   <button type="button" onClick={() => { setStep(2); setError(''); setUserCode(['','','','','','']); }}
                     className="flex items-center justify-center gap-1 text-xs text-slate-400 hover:text-slate-600 underline">
