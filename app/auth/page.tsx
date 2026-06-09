@@ -51,28 +51,15 @@ function GoogleIcon() {
   );
 }
 
-async function fetchProfile(userId: string) {
-  const { data } = await supabase.from('profiles').select('*').eq('id', userId).maybeSingle();
-  if (!data) return null;
-  return {
-    id: data.id,
-    name: data.name,
-    lastName: data.last_name || '',
-    email: data.email,
-    membership: data.membership,
-    role: data.role,
-    isActive: data.is_active,
-    isSpam: data.is_spam,
-    height: data.height,
-    weight: data.weight,
-    age: data.age,
-    sex: data.sex,
-    joinDate: data.join_date,
-    revenue: data.revenue,
-    sessionsLeft: data.sessions_left,
-    expirationDate: data.expiration_date,
-    avatar: data.avatar,
-  };
+async function fetchProfileViaApi() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.access_token) return null;
+  const res = await fetch('/api/profile', {
+    headers: { Authorization: `Bearer ${session.access_token}` },
+  });
+  if (!res.ok) return null;
+  const json = await res.json();
+  return json.profile;
 }
 
 export default function AuthPage() {
@@ -125,7 +112,7 @@ export default function AuthPage() {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
-        const profile = await fetchProfile(session.user.id);
+        const profile = await fetchProfileViaApi();
         if (profile) setUser(profile);
       } else {
         setUser(null);
@@ -134,7 +121,7 @@ export default function AuthPage() {
     // Check existing session
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
-        const profile = await fetchProfile(session.user.id);
+        const profile = await fetchProfileViaApi();
         if (profile) setUser(profile);
       }
     });
@@ -148,13 +135,13 @@ export default function AuthPage() {
       const { data, error } = await supabase.auth.signInWithPassword({ email: loginEmailAddr, password });
       if (error) throw error;
       if (data.user) {
-        const profile = await fetchProfile(data.user.id);
+        const profile = await fetchProfileViaApi();
         if (profile) setUser(profile);
       }
       const isAdmin = loginEmailAddr === 'hamada.laidi.14@gmail.com';
-      setTimeout(() => router.push(isAdmin ? '/admin' : '/?justLoggedIn=true'), 300);
+      router.push(isAdmin ? '/admin' : '/?justLoggedIn=true');
     } catch (e: any) {
-      setError(e.message || 'Invalid email or password');
+      setError(e?.message || 'Invalid email or password');
     }
     setLoading(false);
   };

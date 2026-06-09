@@ -12,7 +12,6 @@ export default function AuthCallback() {
   useEffect(() => {
     supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
-        // Ensure profile exists
         await fetch('/api/auth/callback', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -23,29 +22,12 @@ export default function AuthCallback() {
           }),
         });
 
-        const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).maybeSingle();
-        if (data) {
-          setUser({
-            id: data.id,
-            name: data.name,
-            lastName: data.last_name || '',
-            email: data.email,
-            membership: data.membership,
-            role: data.role,
-            isActive: data.is_active,
-            isSpam: data.is_spam,
-            height: data.height,
-            weight: data.weight,
-            age: data.age,
-            sex: data.sex,
-            joinDate: data.join_date,
-            revenue: data.revenue,
-            sessionsLeft: data.sessions_left,
-            expirationDate: data.expiration_date,
-            avatar: data.avatar,
-          });
-        }
-        router.push(data?.role === 'admin' ? '/admin' : '/');
+        const res = await fetch('/api/profile', {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+        const json = await res.json();
+        if (json.profile) setUser(json.profile);
+        router.push(json.profile?.role === 'admin' ? '/admin' : '/');
       }
     });
   }, [router, setUser]);

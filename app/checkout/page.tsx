@@ -2,36 +2,35 @@
 
 import { Navbar } from '@/components/navbar';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useAuthProtected } from '@/hooks/useAuthProtected';
-import { useState, useRef, useEffect } from 'react';
-import { Loader } from 'lucide-react';
+import { Suspense, useState, useRef, useEffect } from 'react';
+import { Loader2, Trash2, CreditCard, ArrowLeft } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useStore } from '@/lib/store';
+import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 
 export default function CheckoutPage() {
+  return (
+    <Suspense>
+      <CheckoutContent />
+    </Suspense>
+  );
+}
+
+function CheckoutContent() {
   useAuthProtected();
   const user = useStore((s) => s.user);
   const storeProducts = useStore((s) => s.products);
-  const [step, setStep] = useState<'cart' | 'shipping' | 'payment' | 'confirmation'>('cart');
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    email: '',
-    firstName: '',
-    lastName: '',
-    address: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    cardNumber: '',
-    expiryDate: '',
-    cvv: '',
-  });
+  const [paymentError, setPaymentError] = useState('');
+
+  const searchParams = useSearchParams();
+  const paymentStatus = searchParams.get('payment');
 
   const [cartItems, setCartItems] = useState<{ id: string; name: string; price: number; quantity: number }[]>([]);
 
   useEffect(() => {
-    // Load cart from localStorage or use first 3 products as demo
     const stored = localStorage.getItem('checkout-cart');
     if (stored) {
       setCartItems(JSON.parse(stored));
@@ -41,40 +40,39 @@ export default function CheckoutPage() {
     }
   }, [storeProducts]);
 
-  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const tax = Math.round(subtotal * 0.08 * 100) / 100;
-  const shipping = subtotal > 0 ? 0 : 0;
-  const total = subtotal + tax + shipping;
+  const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const removeItem = (id: string) => {
+    const updated = cartItems.filter(i => i.id !== id);
+    setCartItems(updated);
+    localStorage.setItem('checkout-cart', JSON.stringify(updated));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handlePayWithChargily = async () => {
+    if (!user?.id || loading || cartItems.length === 0) return;
     setLoading(true);
-
-    if (step === 'payment') {
-      // Save order to Supabase
-      try {
-        await fetch('/api/orders', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ user_id: user?.id, items: cartItems }),
-        });
+    setPaymentError('');
+    try {
+      const res = await fetch('/api/chargily/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user.id,
+          items: cartItems.map(i => ({ id: i.id, name: i.name, price: i.price, quantity: i.quantity })),
+        }),
+      });
+      const data = await res.json();
+      if (data.url) {
         localStorage.removeItem('checkout-cart');
-      } catch {}
-    }
-
-    setTimeout(() => {
-      if (step === 'shipping') {
-        setStep('payment');
-      } else if (step === 'payment') {
-        setStep('confirmation');
+        window.location.href = data.url;
+      } else {
+        setPaymentError(data.error || 'Erreur lors de la création du paiement');
       }
+    } catch {
+      setPaymentError('Erreur de connexion au serveur');
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
   const heroRef = useRef<HTMLDivElement>(null);
@@ -89,7 +87,6 @@ export default function CheckoutPage() {
     <div className="min-h-screen bg-background pt-14">
       <Navbar />
 
-      {/* Hero banner */}
       <div ref={heroRef} className="relative overflow-hidden" style={{ padding: '64px 0 56px' }}>
         <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,180,216,0.15) 0%, rgba(0,180,216,0.06) 40%, rgba(0,180,216,0.02) 70%, transparent 100%)' }} />
         <div className="absolute top-[-80px] right-[10%] w-[500px] h-[500px] rounded-full hidden md:block" style={{ background: 'radial-gradient(circle, rgba(0,212,170,0.1) 0%, transparent 70%)', filter: 'blur(60px)' }} />
@@ -97,266 +94,98 @@ export default function CheckoutPage() {
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <motion.div style={{ scale: titleScale, opacity: titleOpacity, transformOrigin: 'left' }}>
-            <h1 className="text-4xl font-bold text-foreground mb-2">Checkout</h1>
+            <h1 className="text-4xl font-bold text-foreground mb-2">Paiement</h1>
           </motion.div>
-          <p className="text-foreground/60">Complete your purchase securely</p>
+          <p className="text-foreground/60">Finalisez votre achat en toute sécurité</p>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Progress Steps */}
-        <div className="flex items-center justify-between mb-12 overflow-x-auto">
-          {['cart', 'shipping', 'payment', 'confirmation'].map((s, index) => (
-            <div key={s} className="flex items-center flex-1">
-              <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm ${
-                (index < ['cart', 'shipping', 'payment', 'confirmation'].indexOf(step) || s === step)
-                  ? 'bg-accent text-accent-foreground'
-                  : 'bg-foreground/10 text-foreground/60'
-              }`}>
-                {index + 1}
-              </div>
-              {index < 3 && (
-                <div className={`flex-1 h-1 mx-2 ${
-                  index < ['cart', 'shipping', 'payment', 'confirmation'].indexOf(step)
-                    ? 'bg-accent'
-                    : 'bg-foreground/10'
-                }`}></div>
-              )}
-            </div>
-          ))}
-        </div>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        {paymentStatus === 'failed' && (
+          <div className="mb-4 p-6 rounded-xl bg-red-500/10 border border-red-500/30 text-center">
+            <h2 className="text-xl font-bold text-red-400">Paiement échoué</h2>
+            <p className="text-foreground/60 mt-1">Le paiement a été annulé. Réessayez.</p>
+          </div>
+        )}
+        {paymentError && (
+          <div className="mb-4 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-center">
+            <p className="text-red-400 text-sm">{paymentError}</p>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-2">
-            {step === 'cart' && (
-              <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-foreground">Order Summary</h2>
-                {cartItems.map((item) => (
-                  <div key={item.id} className="flex justify-between items-center p-4 border border-foreground/10 rounded-lg bg-card">
-                    <div>
-                      <h3 className="font-bold text-foreground">{item.name}</h3>
-                      <p className="text-sm text-foreground/60">Quantity: {item.quantity}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-accent">${(item.price * item.quantity).toFixed(2)}</p>
-                    </div>
-                  </div>
-                ))}
-                <Button
-                  onClick={() => setStep('shipping')}
-                  className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
-                >
-                  Continue to Shipping
+          <div className="lg:col-span-2 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-foreground">Votre panier</h2>
+              <Link href="/shop">
+                <Button variant="ghost" size="sm" className="text-accent">
+                  <ArrowLeft className="w-4 h-4 mr-1" /> Continuer
                 </Button>
+              </Link>
+            </div>
+
+            {cartItems.length === 0 ? (
+              <div className="p-12 text-center border border-foreground/10 rounded-xl bg-card">
+                <p className="text-foreground/60 mb-4">Votre panier est vide</p>
+                <Link href="/shop">
+                  <Button className="bg-accent text-accent-foreground hover:bg-accent/90">
+                    Voir les produits
+                  </Button>
+                </Link>
               </div>
-            )}
-
-            {step === 'shipping' && (
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <h2 className="text-2xl font-bold text-foreground">Shipping Address</h2>
-                <div className="space-y-4">
+            ) : (
+              cartItems.map((item) => (
+                <div key={item.id} className="flex justify-between items-center p-4 border border-foreground/10 rounded-lg bg-card">
                   <div>
-                    <label className="text-sm font-medium text-foreground block mb-2">Email</label>
-                    <Input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      required
-                      className="bg-foreground/5 border-foreground/10"
-                    />
+                    <h3 className="font-bold text-foreground">{item.name}</h3>
+                    <p className="text-sm text-foreground/60">Qté: {item.quantity}</p>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm font-medium text-foreground block mb-2">First Name</label>
-                      <Input
-                        name="firstName"
-                        value={formData.firstName}
-                        onChange={handleInputChange}
-                        required
-                        className="bg-foreground/5 border-foreground/10"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-foreground block mb-2">Last Name</label>
-                      <Input
-                        name="lastName"
-                        value={formData.lastName}
-                        onChange={handleInputChange}
-                        required
-                        className="bg-foreground/5 border-foreground/10"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-foreground block mb-2">Address</label>
-                    <Input
-                      name="address"
-                      value={formData.address}
-                      onChange={handleInputChange}
-                      required
-                      className="bg-foreground/5 border-foreground/10"
-                    />
-                  </div>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <label className="text-sm font-medium text-foreground block mb-2">City</label>
-                      <Input
-                        name="city"
-                        value={formData.city}
-                        onChange={handleInputChange}
-                        required
-                        className="bg-foreground/5 border-foreground/10"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-foreground block mb-2">State</label>
-                      <Input
-                        name="state"
-                        value={formData.state}
-                        onChange={handleInputChange}
-                        required
-                        className="bg-foreground/5 border-foreground/10"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-foreground block mb-2">ZIP</label>
-                      <Input
-                        name="zipCode"
-                        value={formData.zipCode}
-                        onChange={handleInputChange}
-                        required
-                        className="bg-foreground/5 border-foreground/10"
-                      />
-                    </div>
+                  <div className="flex items-center gap-4">
+                    <p className="font-bold text-accent">{(item.price * item.quantity).toLocaleString('fr-DZ')} DA</p>
+                    <button onClick={() => removeItem(item.id)} className="text-foreground/40 hover:text-red-400 transition">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
-                <div className="flex gap-4">
-                  <Button
-                    type="button"
-                    onClick={() => setStep('cart')}
-                    variant="outline"
-                    className="flex-1 border-foreground/20 text-foreground hover:bg-foreground/5"
-                  >
-                    Back
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={loading}
-                    className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90"
-                  >
-                    {loading ? 'Processing...' : 'Continue to Payment'}
-                  </Button>
-                </div>
-              </form>
-            )}
-
-            {step === 'payment' && (
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <h2 className="text-2xl font-bold text-foreground">Payment Method</h2>
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium text-foreground block mb-2">Card Number</label>
-                    <Input
-                      name="cardNumber"
-                      placeholder="1234 5678 9012 3456"
-                      value={formData.cardNumber}
-                      onChange={handleInputChange}
-                      required
-                      className="bg-foreground/5 border-foreground/10"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm font-medium text-foreground block mb-2">Expiry Date</label>
-                      <Input
-                        name="expiryDate"
-                        placeholder="MM/YY"
-                        value={formData.expiryDate}
-                        onChange={handleInputChange}
-                        required
-                        className="bg-foreground/5 border-foreground/10"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-foreground block mb-2">CVV</label>
-                      <Input
-                        name="cvv"
-                        placeholder="123"
-                        value={formData.cvv}
-                        onChange={handleInputChange}
-                        required
-                        className="bg-foreground/5 border-foreground/10"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div className="flex gap-4">
-                  <Button
-                    type="button"
-                    onClick={() => setStep('shipping')}
-                    variant="outline"
-                    className="flex-1 border-foreground/20 text-foreground hover:bg-foreground/5"
-                  >
-                    Back
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={loading}
-                    className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90"
-                  >
-                    {loading ? <Loader className="w-4 h-4 animate-spin" /> : `Complete Purchase - $${total.toFixed(2)}`}
-                  </Button>
-                </div>
-              </form>
-            )}
-
-            {step === 'confirmation' && (
-              <div className="space-y-6 text-center">
-                <div className="p-12 rounded-lg bg-gradient-to-br from-accent/20 to-accent/5 border border-accent/20">
-                  <div className="text-5xl mb-4">✓</div>
-                  <h2 className="text-3xl font-bold text-foreground mb-2">Order Confirmed!</h2>
-                  <p className="text-foreground/60">Thank you for your purchase</p>
-                </div>
-                <div className="space-y-2 text-left bg-card border border-foreground/10 p-6 rounded-lg">
-                  <p className="text-foreground/60">Order Number: <span className="font-bold text-foreground">#KG-2024-001</span></p>
-                  <p className="text-foreground/60">Total: <span className="font-bold text-accent text-lg">${total.toFixed(2)}</span></p>
-                  <p className="text-foreground/60">Estimated Delivery: January 22, 2024</p>
-                </div>
-                <Button className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
-                  View Order
-                </Button>
-              </div>
+              ))
             )}
           </div>
 
-          {/* Order Summary Sidebar */}
           <div className="lg:col-span-1">
             <div className="border border-foreground/10 rounded-lg p-6 bg-card sticky top-24 h-fit">
-              <h3 className="text-xl font-bold text-foreground mb-6">Order Summary</h3>
+              <h3 className="text-xl font-bold text-foreground mb-6">Récapitulatif</h3>
               <div className="space-y-3 mb-6 border-b border-foreground/10 pb-6">
                 <div className="flex justify-between text-foreground/60">
-                  <span>Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-foreground/60">
-                  <span>Tax</span>
-                  <span>${tax.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-foreground/60">
-                  <span>Shipping</span>
-                  <span>${shipping.toFixed(2)}</span>
+                  <span>Sous-total</span>
+                  <span>{total.toLocaleString('fr-DZ')} DA</span>
                 </div>
               </div>
               <div className="flex justify-between items-center mb-6">
                 <span className="text-lg font-bold text-foreground">Total</span>
-                <span className="text-2xl font-bold text-accent">${total.toFixed(2)}</span>
+                <span className="text-2xl font-bold text-accent">{total.toLocaleString('fr-DZ')} DA</span>
               </div>
+
+              <Button
+                onClick={handlePayWithChargily}
+                disabled={loading || cartItems.length === 0}
+                className="w-full bg-accent text-accent-foreground hover:bg-accent/90 mb-4"
+              >
+                {loading ? (
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Traitement...</>
+                ) : (
+                  <><CreditCard className="w-4 h-4 mr-2" /> Payer avec Chargily</>
+                )}
+              </Button>
+
+              <div className="flex justify-center gap-3 mb-4">
+                <div className="px-3 py-1 rounded bg-foreground/5 text-xs font-medium text-foreground/60">CIB</div>
+                <div className="px-3 py-1 rounded bg-foreground/5 text-xs font-medium text-foreground/60">EDAHABIA</div>
+              </div>
+
               <div className="space-y-2 text-sm text-foreground/60">
-                <p>✓ Free returns within 30 days</p>
-                <p>✓ Secure checkout</p>
-                <p>✓ 100% money-back guarantee</p>
+                <p>✓ Paiement 100% sécurisé</p>
+                <p>✓ Retours gratuits sous 30 jours</p>
               </div>
             </div>
           </div>

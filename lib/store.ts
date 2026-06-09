@@ -166,29 +166,14 @@ export const useStore = create<UserStore>()(
       fetchUsers: async () => {
         try {
           const { supabase } = await import('@/lib/supabase');
-          const { data, error } = await supabase.from('profiles').select('*');
-          if (!error && data) {
-            const users: User[] = data.map((p: any) => ({
-              id: p.id,
-              name: p.name,
-              lastName: p.last_name,
-              email: p.email,
-              membership: p.membership,
-              role: p.role,
-              isActive: p.is_active,
-              isSpam: p.is_spam,
-              height: p.height,
-              weight: p.weight,
-              age: p.age,
-              sex: p.sex,
-              joinDate: p.join_date,
-              revenue: p.revenue,
-              sessionsLeft: p.sessions_left,
-              expirationDate: p.expiration_date,
-              avatar: p.avatar,
-            }));
-            set({ allUsers: users });
-          }
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session?.access_token) return;
+          const res = await fetch('/api/users', {
+            headers: { Authorization: `Bearer ${session.access_token}` },
+          });
+          if (!res.ok) return;
+          const json = await res.json();
+          if (json.users) set({ allUsers: json.users });
         } catch {}
       },
 
