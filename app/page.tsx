@@ -25,6 +25,8 @@ const sponsors = [
   { name: 'Reborn', letter: 'R', bg: 'rgba(200,200,50,0.2)', fg: '#c8c832' },
   { name: 'Creapure', letter: 'C', bg: 'rgba(50,200,200,0.2)', fg: '#32c8c8' },
   { name: 'On Sport', letter: 'OS', bg: 'rgba(255,200,50,0.2)', fg: '#ffc832' },
+  { name: 'Izem', letter: 'I', bg: 'rgba(255,180,0,0.2)', fg: '#ffb400' },
+  { name: 'RedBull', letter: 'RB', bg: 'rgba(200,0,0,0.2)', fg: '#c80000' },
   { name: 'Mark Nutrition', letter: 'M', bg: 'rgba(255,80,80,0.2)', fg: '#ff5050' },
   { name: 'Power Fitness', letter: 'PF', bg: 'rgba(255,50,50,0.2)', fg: '#ff3232' },
   { name: 'Technogym', letter: 'T', bg: 'rgba(0,80,200,0.2)', fg: '#0050c8' },
@@ -291,9 +293,9 @@ export default function Home() {
 
       {/* ─── SPONSORS 3 ROWS ─── */}
       {(() => {
-        const localRow = [sponsors[0],sponsors[1],sponsors[2],sponsors[3],sponsors[4],sponsors[5],sponsors[6],sponsors[7],sponsors[8],sponsors[9],sponsors[10],sponsors[33]];
-        const nutRow = [sponsors[17],sponsors[18],sponsors[19],sponsors[20],sponsors[21],sponsors[22],sponsors[23],sponsors[24],sponsors[25],sponsors[26],sponsors[27],sponsors[28]];
-        const machRow = [sponsors[11],sponsors[12],sponsors[13],sponsors[14],sponsors[15],sponsors[16],sponsors[29],sponsors[30],sponsors[31],sponsors[32],sponsors[34],sponsors[35],sponsors[36]];
+        const localRow = [sponsors[0],sponsors[1],sponsors[2],sponsors[3],sponsors[4],sponsors[5],sponsors[6],sponsors[7],sponsors[8],sponsors[9],sponsors[10],sponsors[11],sponsors[35]];
+        const nutRow = [sponsors[19],sponsors[20],sponsors[21],sponsors[22],sponsors[23],sponsors[24],sponsors[25],sponsors[26],sponsors[27],sponsors[28],sponsors[29],sponsors[30]];
+        const machRow = [sponsors[12],sponsors[13],sponsors[14],sponsors[15],sponsors[16],sponsors[17],sponsors[18],sponsors[31],sponsors[32],sponsors[33],sponsors[34],sponsors[36],sponsors[37],sponsors[38]];
         const rows = [
           { items: localRow, speed: 18, label: 'LOCAL PARTNERS' },
           { items: nutRow, speed: 22, label: 'NUTRITION SPONSORS' },
