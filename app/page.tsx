@@ -16,6 +16,21 @@ const FEATURES = [
   { n: '06', title: 'Community', desc: 'Challenges, leaderboards, and athlete profiles. Train alone — compete together.' },
 ];
 
+const sponsors = [
+  { name: 'Bougelaz', letter: 'B', bg: 'rgba(0,120,200,0.2)', fg: '#4a9eff' },
+  { name: 'Ifri', letter: 'I', bg: 'rgba(0,200,160,0.2)', fg: '#00c8a0' },
+  { name: 'Azro', letter: 'A', bg: 'rgba(255,100,50,0.2)', fg: '#ff6a33' },
+  { name: 'Lala Khdija', letter: 'LK', bg: 'rgba(200,50,100,0.2)', fg: '#c83264' },
+  { name: 'F&H Nutrition', letter: 'F', bg: 'rgba(100,50,200,0.2)', fg: '#6632c8' },
+  { name: 'Reborn', letter: 'R', bg: 'rgba(200,200,50,0.2)', fg: '#c8c832' },
+  { name: 'Creapure', letter: 'C', bg: 'rgba(50,200,200,0.2)', fg: '#32c8c8' },
+  { name: 'On Sport', letter: 'OS', bg: 'rgba(255,200,50,0.2)', fg: '#ffc832' },
+  { name: 'Adidas', bg: 'transparent', fg: '#fff', svg: `<svg viewBox="0 0 284.3 276.4" style="height:20px;fill:rgba(255,255,255,0.4)"><path d="M262.9,128.7c-1.8,3.5-4.9,8.2-7.7,11.1H22.7c-1.8-2.2-5.8-7.3-7.4-11.1H262.9z"/><path d="M246.1,151.2H39.3c3.3,4,6.8,7.5,10.6,10.1h184.6C239.2,158.7,243.4,155.2,246.1,151.2"/><path d="M220.6,172h-56.8c-1.6,9-1.6,17.4-1.6,23.4C178.8,194.3,200.6,186.8,220.6,172"/><path d="M284,55.3c-25.9,1.6-63.1,19-87.2,47.3c-4.4,5.1-8.4,10.1-11.5,15.5h83.1C279.8,95.7,285.6,73.4,284,55.3"/><path d="M122.8,195.4c0.3-5.9,0.3-14.3-0.9-23.4H64.7C85.1,186.8,106.9,194.3,122.8,195.4"/><path d="M142.7,197.2c6-6.2,12.2-14.6,17.7-25.2h-35.6C130.8,182.6,136.3,191,142.7,197.2"/><path d="M100.3,118c-3.1-5.3-7.3-10.4-11.5-15.5C64.7,74.3,27.3,56.8,2,55.3c-1.8,18.1,3.9,40.4,15,62.7H100.3z"/><path d="M178.8,118c0.5-6.4,1.1-12.6,1.1-19.9c0-39.4-17.7-80-37.1-98.1c-19.6,18.1-36.9,58.7-36.9,98.1c0,7.3,0,13.5,1.1,19.9H178.8z"/></svg>` },
+  { name: 'Nike', bg: 'transparent', fg: '#fff', svg: `<svg viewBox="135.5 361.38 1000 356.39" style="height:18px;fill:rgba(255,255,255,0.4)"><path d="M245.8075 717.62406c-29.79588-1.1837-54.1734-9.3368-73.23459-24.4796-3.63775-2.8928-12.30611-11.5663-15.21427-15.2245-7.72958-9.7193-12.98467-19.1785-16.48977-29.6734-10.7857-32.3061-5.23469-74.6989 15.87753-121.2243 18.0765-39.8316 45.96932-79.3366 94.63252-134.0508 7.16836-8.0511 28.51526-31.5969 28.65302-31.5969.051 0-1.11225 2.0153-2.57652 4.4694-12.65304 21.1938-23.47957 46.158-29.37751 67.7703-9.47448 34.6785-8.33163 64.4387 3.34693 87.5151 8.05611 15.898 21.86731 29.6684 37.3979 37.2806 27.18874 13.3214 66.9948 14.4235 115.60699 3.2245 3.34694-.7755 169.19363-44.801 368.55048-97.8366 199.35686-53.0408 362.49439-96.4029 362.51989-96.3672.056.046-463.16259 198.2599-703.62654 301.0914-38.08158 16.2806-48.26521 20.3928-66.16827 26.6785-45.76525 16.0714-86.76008 23.7398-119.89779 22.4235z"/></svg>` },
+  { name: 'Macroh', letter: 'M', bg: 'rgba(220,50,50,0.2)', fg: '#dc3232' },
+  { name: 'Hummel', bg: 'transparent', fg: '#fff', svg: `<svg viewBox="0 0 400 120" style="height:22px;fill:rgba(255,255,255,0.4)"><path d="M30 95 L70 25 L110 95 L150 25 L190 95 L230 25 L270 95 L310 25 L350 95" stroke="rgba(255,255,255,0.4)" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>` },
+];
+
 export default function Home() {
   const [showCinematic, setShowCinematic] = useState(false);
   const sectionRefs = useRef<(HTMLElement | HTMLDivElement | null)[]>([]);
@@ -251,38 +266,32 @@ export default function Home() {
 
       {/* ─── SPONSORS BAR ─── */}
       <section style={{ padding: '28px 0', background: 'rgba(5,10,8,0.95)', borderTop: '1px solid rgba(0,200,160,0.08)', borderBottom: '1px solid rgba(0,200,160,0.08)', overflow: 'hidden' }}>
-        <div style={{ marginBottom: 10 }}>
-          <p style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 9, letterSpacing: 4, textTransform: 'uppercase', color: 'rgba(0,200,160,0.3)', textAlign: 'center' }}>Official Partners</p>
-        </div>
+        <p style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 9, letterSpacing: 4, textTransform: 'uppercase', color: 'rgba(0,200,160,0.3)', textAlign: 'center', marginBottom: 14 }}>Official Partners</p>
         <div style={{ display: 'flex', overflow: 'hidden', maskImage: 'linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)' }}>
           <motion.div
-            style={{ display: 'flex', gap: 60, padding: '8px 30px', whiteSpace: 'nowrap', alignItems: 'center' }}
+            style={{ display: 'flex', gap: 40, padding: '4px 30px', whiteSpace: 'nowrap', alignItems: 'center' }}
             animate={{ x: ['0%', '-50%'] }}
-            transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
+            transition={{ duration: 35, repeat: Infinity, ease: 'linear' }}
           >
-            {[
-              'Bougelaz', 'Ifri', 'Azro', 'Lala Khdija', 'F&H Nutrition',
-              'Reborn', 'Creapure', 'On Sport', 'Adidas', 'Nike', 'Macroh', 'Hummel',
-            ].map((brand, i) => (
-              <span key={i} style={{
-                fontFamily: "'Barlow Condensed', sans-serif", fontSize: 20, fontWeight: 700, letterSpacing: 4,
-                textTransform: 'uppercase', color: i % 2 === 0 ? 'rgba(0,200,160,0.4)' : 'rgba(255,255,255,0.12)',
-                transition: 'color 0.3s',
-                padding: '8px 24px',
-                borderRight: '1px solid rgba(255,255,255,0.04)',
-              }}>{brand}</span>
-            ))}
-            {/* Duplicate for seamless loop */}
-            {[
-              'Bougelaz', 'Ifri', 'Azro', 'Lala Khdija', 'F&H Nutrition',
-              'Reborn', 'Creapure', 'On Sport', 'Adidas', 'Nike', 'Macroh', 'Hummel',
-            ].map((brand, i) => (
-              <span key={`d-${i}`} style={{
-                fontFamily: "'Barlow Condensed', sans-serif", fontSize: 20, fontWeight: 700, letterSpacing: 4,
-                textTransform: 'uppercase', color: i % 2 === 0 ? 'rgba(0,200,160,0.4)' : 'rgba(255,255,255,0.12)',
-                padding: '8px 24px',
-                borderRight: '1px solid rgba(255,255,255,0.04)',
-              }}>{brand}</span>
+            {[...sponsors, ...sponsors].map((s, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0 20px', borderRight: '1px solid rgba(255,255,255,0.04)' }}>
+                {s.svg ? (
+                  <div style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.5 }}>
+                    <div dangerouslySetInnerHTML={{ __html: s.svg }} style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} />
+                  </div>
+                ) : (
+                  <div style={{
+                    width: 32, height: 32, borderRadius: '50%',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: s.bg || 'rgba(255,255,255,0.06)',
+                    fontSize: 13, fontWeight: 800, color: s.fg || 'rgba(255,255,255,0.3)',
+                  }}>{s.letter}</div>
+                )}
+                <span style={{
+                  fontFamily: "'Barlow Condensed', sans-serif", fontSize: 16, fontWeight: 600, letterSpacing: 2,
+                  textTransform: 'uppercase', color: 'rgba(255,255,255,0.2)',
+                }}>{s.name}</span>
+              </div>
             ))}
           </motion.div>
         </div>
