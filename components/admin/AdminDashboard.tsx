@@ -12,7 +12,7 @@ import {
   Search, Eye, EyeOff, AlertCircle, QrCode, LayoutDashboard,
   Users, TrendingUp, DollarSign, Shield, ChevronLeft, ChevronRight,
   Home, Briefcase, Star, Phone, Mail, Activity, UserCheck, Crown, Clock, Scan,
-  Menu, Trash2, Plus, X, UserPlus, Package, DoorOpen, History, Settings,
+  Menu, Trash2, Plus, X, UserPlus, Package,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -438,7 +438,7 @@ export function AdminDashboard() {
                     { section: 'clients' as Section, label: 'Clients', icon: Users, color: spamClients > 0 ? '#ef4444' : '#4ade80', desc: spamClients > 0 ? `${spamClients} spam` : `${clientUsers.length} total` },
                     { section: 'products' as Section, label: 'Produits', icon: Package, color: (products?.length || 0) > 0 ? '#4ade80' : '#ef4444', desc: `${products?.length || 0} produits` },
                     { section: 'workers' as Section, label: 'Employés', icon: Briefcase, color: activeWorkerCount > 0 ? '#4ade80' : '#ef4444', desc: `${activeWorkerCount} actifs` },
-                    { section: 'scanner' as Section, label: 'Porte', icon: DoorOpen, color: doorUrl ? '#4ade80' : '#ef4444', desc: doorUrl ? 'Connectée' : 'Non configurée' },
+                    { section: 'scanner' as Section, label: 'Porte', icon: Shield, color: doorUrl ? '#4ade80' : '#ef4444', desc: doorUrl ? 'Connectée' : 'Non configurée' },
                   ].map((shortcut, i) => (
                     <motion.button
                       key={shortcut.label}
@@ -884,7 +884,7 @@ export function AdminDashboard() {
                 {/* Door access settings */}
                 <details style={{ marginBottom: 14 }}>
                   <summary style={{ cursor: 'pointer', color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: 600, userSelect: 'none' }}>
-                    <Settings style={{ width: 12, height: 12, display: 'inline', marginRight: 6 }} />
+                    <Activity style={{ width: 12, height: 12, display: 'inline', marginRight: 6 }} />
                     Porte électrique — configuration
                   </summary>
                   <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
@@ -921,7 +921,7 @@ export function AdminDashboard() {
                 {checkinHistory.length > 0 && (
                   <details style={{ marginBottom: 14 }}>
                     <summary style={{ cursor: 'pointer', color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: 600, userSelect: 'none' }}>
-                      <History style={{ width: 12, height: 12, display: 'inline', marginRight: 6 }} />
+                      <Clock style={{ width: 12, height: 12, display: 'inline', marginRight: 6 }} />
                       Dernières entrées ({checkinHistory.length})
                     </summary>
                     <div style={{ marginTop: 8, maxHeight: 180, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -1050,7 +1050,7 @@ export function AdminDashboard() {
                             fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                           }}
                         >
-                          <DoorOpen style={{ width: 16, height: 16 }} />
+                          <Shield style={{ width: 16, height: 16 }} />
                           {doorGranted ? 'Accès accordé ✓' : 'Ouvrir porte'}
                         </button>
                       )}
