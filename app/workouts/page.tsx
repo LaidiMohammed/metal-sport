@@ -229,7 +229,11 @@ export default function WorkoutsPage() {
       name: plan.name,
       exerciseIds: editingExerciseIds,
     };
-    if (!editingScheduleId) saveScheduledWorkout(selectedDate, plan.name);
+    if (editingScheduleId) {
+      fetch(`/api/workouts?id=${editingScheduleId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ exercise_id: plan.name, date: selectedDate }) });
+    } else {
+      saveScheduledWorkout(selectedDate, plan.name);
+    }
     setScheduled(editingScheduleId ? scheduled.map(s => s.id === editingScheduleId ? newSched : s) : [...scheduled, newSched]);
     setEditingScheduleId(null);
     setSelectedPlanId(null);
@@ -819,7 +823,7 @@ export default function WorkoutsPage() {
 
                     <motion.button
                       whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-                      onClick={() => setLogs(logs.filter((l) => l.id !== log.id))}
+                      onClick={async () => { await fetch(`/api/workouts?id=${log.id}`, { method: 'DELETE' }); setLogs(logs.filter((l) => l.id !== log.id)); }}
                       style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.25)', padding: 8, borderRadius: 8 }}
                     >
                       <Trash2 style={{ width: 16, height: 16 }} />
