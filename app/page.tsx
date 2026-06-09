@@ -289,38 +289,46 @@ export default function Home() {
         </Link>
       </section>
 
-      {/* ─── SPONSORS BAR ─── */}
-      <section style={{ padding: '28px 0', background: 'rgba(5,10,8,0.95)', borderTop: '1px solid rgba(0,200,160,0.08)', borderBottom: '1px solid rgba(0,200,160,0.08)', overflow: 'hidden' }}>
-        <p style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 9, letterSpacing: 4, textTransform: 'uppercase', color: 'rgba(0,200,160,0.3)', textAlign: 'center', marginBottom: 14 }}>Official Partners</p>
-        <div style={{ display: 'flex', overflow: 'hidden', maskImage: 'linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)' }}>
-          <motion.div
-            style={{ display: 'flex', gap: 40, padding: '4px 30px', whiteSpace: 'nowrap', alignItems: 'center' }}
-            animate={{ x: ['0%', '-50%'] }}
-            transition={{ duration: 35, repeat: Infinity, ease: 'linear' }}
-          >
-            {[...sponsors, ...sponsors].map((s, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0 20px', borderRight: '1px solid rgba(255,255,255,0.04)' }}>
-                {s.svg ? (
-                  <div style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.5 }}>
-                    <div dangerouslySetInnerHTML={{ __html: s.svg }} style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} />
-                  </div>
-                ) : (
-                  <div style={{
-                    width: 32, height: 32, borderRadius: '50%',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: s.bg || 'rgba(255,255,255,0.06)',
-                    fontSize: 13, fontWeight: 800, color: s.fg || 'rgba(255,255,255,0.3)',
-                  }}>{s.letter}</div>
-                )}
-                <span style={{
-                  fontFamily: "'Barlow Condensed', sans-serif", fontSize: 16, fontWeight: 600, letterSpacing: 2,
-                  textTransform: 'uppercase', color: 'rgba(255,255,255,0.2)',
-                }}>{s.name}</span>
+      {/* ─── SPONSORS 3 ROWS ─── */}
+      {(() => {
+        const localRow = [sponsors[0],sponsors[1],sponsors[2],sponsors[3],sponsors[4],sponsors[5],sponsors[6],sponsors[7],sponsors[8],sponsors[9],sponsors[10],sponsors[33]];
+        const nutRow = [sponsors[17],sponsors[18],sponsors[19],sponsors[20],sponsors[21],sponsors[22],sponsors[23],sponsors[24],sponsors[25],sponsors[26],sponsors[27],sponsors[28]];
+        const machRow = [sponsors[11],sponsors[12],sponsors[13],sponsors[14],sponsors[15],sponsors[16],sponsors[29],sponsors[30],sponsors[31],sponsors[32],sponsors[34],sponsors[35],sponsors[36]];
+        const rows = [
+          { items: localRow, speed: 18, label: 'LOCAL PARTNERS' },
+          { items: nutRow, speed: 22, label: 'NUTRITION SPONSORS' },
+          { items: machRow, speed: 16, label: 'EQUIPMENT PARTNERS' },
+        ];
+        return (
+          <section style={{ padding: '24px 0 8px', background: 'rgba(5,10,8,0.95)', borderTop: '1px solid rgba(0,200,160,0.08)', borderBottom: '1px solid rgba(0,200,160,0.08)', overflow: 'hidden' }}>
+            <p style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 9, letterSpacing: 4, textTransform: 'uppercase', color: 'rgba(0,200,160,0.3)', textAlign: 'center', marginBottom: 16 }}>Official Partners</p>
+            {rows.map((row, ri) => (
+              <div key={ri} style={{ marginBottom: ri < 2 ? 10 : 0 }}>
+                <div style={{ overflow: 'hidden', maskImage: 'linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)' }}>
+                  <motion.div
+                    style={{ display: 'flex', gap: 32, padding: '0 20px', whiteSpace: 'nowrap', alignItems: 'center' }}
+                    animate={{ x: ri % 2 === 0 ? ['0%', '-50%'] : ['-50%', '0%'] }}
+                    transition={{ duration: row.speed, repeat: Infinity, ease: 'linear' }}
+                  >
+                    {[...row.items, ...row.items].map((s, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 16px', borderRight: '1px solid rgba(255,255,255,0.04)' }}>
+                        {s.svg ? (
+                          <div style={{ width: 32, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.45 }}>
+                            <div dangerouslySetInnerHTML={{ __html: s.svg }} style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }} />
+                          </div>
+                        ) : (
+                          <div style={{ width: 26, height: 26, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: s.bg || 'rgba(255,255,255,0.06)', fontSize: 11, fontWeight: 800, color: s.fg || 'rgba(255,255,255,0.3)', flexShrink: 0 }}>{s.letter}</div>
+                        )}
+                        <span style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 14, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.18)' }}>{s.name}</span>
+                      </div>
+                    ))}
+                  </motion.div>
+                </div>
               </div>
             ))}
-          </motion.div>
-        </div>
-      </section>
+          </section>
+        );
+      })()}
 
       <Footer />
 
