@@ -86,11 +86,12 @@ export default function AuthPage() {
   const [gymLevel,    setGymLevel]    = useState('');
 
   // ── Email verification ────────────────────────────────────────────────────
-  const [verifyStep,  setVerifyStep]  = useState(false);
-  const [userCode,    setUserCode]    = useState(['','','','','','']);
-  const [verifyEmail, setVerifyEmail] = useState('');
-  const [verifyName,  setVerifyName]  = useState('');
-  const [sendingCode, setSendingCode] = useState(false);
+  const [verifyStep,     setVerifyStep]     = useState(false);
+  const [userCode,       setUserCode]       = useState(['','','','','','']);
+  const [verifyEmail,    setVerifyEmail]    = useState('');
+  const [verifyName,     setVerifyName]     = useState('');
+  const [sendingCode,    setSendingCode]    = useState(false);
+  const [verifyToken,    setVerifyToken]    = useState('');
 
   // ── Shared ────────────────────────────────────────────────────────────────
   const [loginEmail,  setLoginEmail]  = useState('');
@@ -160,7 +161,7 @@ export default function AuthPage() {
       const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, name: firstName, lastName, code }),
+        body: JSON.stringify({ email, password, name: firstName, lastName, code, token: verifyToken }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Verification failed');
@@ -213,6 +214,7 @@ export default function AuthPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to send code');
       setVerifyEmail(email);
+      setVerifyToken(data.token);
       setStep(3);
     } catch (e: any) {
       setError(e.message || 'Failed to send verification code');

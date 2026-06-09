@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
-import { supabaseAdmin } from '@/lib/supabase-admin';
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { createToken } from '@/lib/verification-token';
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,27 +10,9 @@ export async function POST(req: NextRequest) {
     }
 
     const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+    const token = createToken(email, code);
 
-    // Delete old codes for this email, then insert new one
-    const { error: delError } = await supabaseAdmin
-      .from('verification_codes')
-      .delete()
-      .eq('email', email);
-
-    if (delError) {
-      console.error('Delete old codes error:', delError.message);
-    }
-
-    const { error: insertError } = await supabaseAdmin
-      .from('verification_codes')
-      .insert({ email, code, expires_at: expiresAt, attempts: 0 });
-
-    if (insertError) {
-      return NextResponse.json({ error: 'Failed to store code: ' + insertError.message }, { status: 500 });
-    }
-
-    // Send email via Resend (will fail if domain not verified — fallback to console)
+    // Send email via Resend
     try {
       await resend.emails.send({
         from: 'metal.sport.31 <metal.sport.31@gym31.com>',
@@ -48,16 +28,15 @@ export async function POST(req: NextRequest) {
             <div style="background:#fff;border-radius:8px;padding:24px;border:1px solid #e5e7eb;">
               <p style="color:#4b5563;font-size:14px;margin:0 0 16px;">Use the code below to verify your account:</p>
               <div style="text-align:center;font-size:36px;font-weight:900;letter-spacing:8px;color:#059669;padding:20px;background:#f0fdf4;border-radius:8px;">${code}</div>
-              <p style="color:#9ca3af;font-size:12px;margin:16px 0 0;">This code expires in 10 minutes. If you didn&apos;t request this, ignore this email.</p>
+              <p style="color:#9ca3af;font-size:12px;margin:16px 0 0;">This code expires in 10 minutes.</p>
             </div>
-            <p style="text-align:center;color:#9ca3af;font-size:11px;margin-top:16px;">metal.sport.31</p>
           </div>`,
       });
-    } catch (emailErr: any) {
-      console.log(`[DEV] Resend not available — code for ${email}: ${code}`);
+    } catch {
+      console.log(`[DEV] Email send failed — code for ${email}: ${code}`);
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ token });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
