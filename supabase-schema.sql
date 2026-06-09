@@ -3,6 +3,25 @@
 -- Execute this in Supabase SQL Editor
 -- ============================================================
 
+-- 7. Check-ins (attendance / door access log)
+CREATE TABLE IF NOT EXISTS check_ins (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  membership TEXT,
+  status TEXT NOT NULL DEFAULT 'granted',
+  door_triggered BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 8. Admin settings (key-value storage)
+CREATE TABLE IF NOT EXISTS admin_settings (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- 1. Profiles (extends Supabase Auth users)
 CREATE TABLE profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,

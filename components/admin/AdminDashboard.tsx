@@ -12,7 +12,7 @@ import {
   Search, Eye, EyeOff, AlertCircle, QrCode, LayoutDashboard,
   Users, TrendingUp, DollarSign, Shield, ChevronLeft, ChevronRight,
   Home, Briefcase, Star, Phone, Mail, Activity, UserCheck, Crown, Clock, Scan,
-  Menu, Trash2, Plus, X, UserPlus, Package,
+  Menu, Trash2, Plus, X, UserPlus, Package, DoorOpen, History, Settings,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -89,6 +89,11 @@ export function AdminDashboard() {
     sessionsLeft: '', expirationDate: '', revenue: '',
   });
 
+  const [lastCheckin, setLastCheckin] = useState<string>('');
+  const [checkinHistory, setCheckinHistory] = useState<any[]>([]);
+  const [doorUrl, setDoorUrl] = useState('');
+  const [doorGranted, setDoorGranted] = useState(false);
+
   const products = useStore((state) => state.products);
   const addProduct = useStore((state) => state.addProduct);
   const updateProduct = useStore((state) => state.updateProduct);
@@ -135,6 +140,7 @@ export function AdminDashboard() {
           try { const p = JSON.parse(decodedText); if (p.id) id = p.id; } catch {}
           const foundUser = pool.find(u => u.id === id) || null;
           setSelectedUser(foundUser);
+          if (foundUser) recordCheckin(foundUser);
           scanner.stop().then(() => {}).catch(() => {});
           setScanning(false);
           scannerStartingRef.current = false;
@@ -160,6 +166,16 @@ export function AdminDashboard() {
   useEffect(() => {
     if (activeSection === 'scanner') {
       startScanner();
+      (async () => {
+        const headers = await getAuthHeaders();
+        if (!headers) return;
+        const [settingsRes, checkinRes] = await Promise.all([
+          fetch('/api/admin-settings', { headers }).catch(() => null),
+          fetch('/api/check-ins?limit=20', { headers }).catch(() => null),
+        ]);
+        if (settingsRes?.ok) { const s = await settingsRes.json(); setDoorUrl(s.door_webhook_url || ''); }
+        if (checkinRes?.ok) setCheckinHistory(await checkinRes.json());
+      })();
       return () => { stopScanner(); };
     } else {
       stopScanner();
@@ -223,6 +239,48 @@ export function AdminDashboard() {
     const q = text.toLowerCase();
     const byName = pool.find(u => u.name.toLowerCase().includes(q) || (u.lastName || '').toLowerCase().includes(q) || u.email.toLowerCase().includes(q));
     return byName || null;
+  };
+
+  const getAuthHeaders = async () => {
+    const { supabase } = await import('@/lib/supabase');
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) return null;
+    return { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' };
+  };
+
+  const recordCheckin = async (user: User) => {
+    try {
+      const headers = await getAuthHeaders();
+      const urlRes = headers ? await fetch('/api/admin-settings', { headers }).catch(() => null) : null;
+      const settings = urlRes?.ok ? await urlRes.json() : {};
+      const door_url = settings.door_webhook_url || '';
+
+      const res = await fetch('/api/check-ins', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: user.id,
+          name: user.name + (user.lastName ? ' ' + user.lastName : ''),
+          email: user.email,
+          membership: user.membership,
+          door_url,
+        }),
+      });
+      if (res.ok) {
+        const { checkin } = await res.json();
+        setLastCheckin(new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }));
+        setDoorGranted(!!checkin.door_triggered);
+        setCheckinHistory(prev => [checkin, ...prev].slice(0, 20));
+      }
+    } catch {}
+  };
+
+  const triggerDoor = async () => {
+    if (!selectedUser || !doorUrl) return;
+    try {
+      await fetch(doorUrl, { method: 'GET', signal: AbortSignal.timeout(3000) });
+      setDoorGranted(true);
+    } catch {}
   };
 
   const filteredClients = clientUsers.filter((user) =>
@@ -776,6 +834,69 @@ export function AdminDashboard() {
                   />
                 </div>
 
+                {/* Door access settings */}
+                <details style={{ marginBottom: 14 }}>
+                  <summary style={{ cursor: 'pointer', color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: 600, userSelect: 'none' }}>
+                    <Settings style={{ width: 12, height: 12, display: 'inline', marginRight: 6 }} />
+                    Porte électrique — configuration
+                  </summary>
+                  <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
+                    <input
+                      value={doorUrl}
+                      onChange={(e) => setDoorUrl(e.target.value)}
+                      placeholder="https://… (URL du contrôleur de porte)"
+                      style={{
+                        flex: 1, padding: '8px 12px', fontSize: 12, outline: 'none',
+                        borderRadius: 8, border: '1px solid var(--border)',
+                        background: 'rgba(255,255,255,0.03)', color: '#fff',
+                      }}
+                    />
+                    <button
+                      onClick={async () => {
+                        const headers = await getAuthHeaders();
+                        if (!headers) return;
+                        await fetch('/api/admin-settings', {
+                          method: 'PUT', headers,
+                          body: JSON.stringify({ door_webhook_url: doorUrl }),
+                        });
+                      }}
+                      style={{
+                        padding: '8px 14px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                        background: 'rgba(0,212,170,0.12)', color: '#00d4aa', fontWeight: 600, fontSize: 12, whiteSpace: 'nowrap',
+                      }}
+                    >
+                      Save
+                    </button>
+                  </div>
+                </details>
+
+                {/* Recent check-ins */}
+                {checkinHistory.length > 0 && (
+                  <details style={{ marginBottom: 14 }}>
+                    <summary style={{ cursor: 'pointer', color: 'rgba(255,255,255,0.3)', fontSize: 11, fontWeight: 600, userSelect: 'none' }}>
+                      <History style={{ width: 12, height: 12, display: 'inline', marginRight: 6 }} />
+                      Dernières entrées ({checkinHistory.length})
+                    </summary>
+                    <div style={{ marginTop: 8, maxHeight: 180, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 3 }}>
+                      {checkinHistory.map((c: any) => (
+                        <div key={c.id} style={{
+                          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                          padding: '6px 10px', borderRadius: 6,
+                          background: 'rgba(255,255,255,0.03)', fontSize: 11,
+                        }}>
+                          <span style={{ color: '#fff', fontWeight: 600 }}>{c.name}</span>
+                          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                            <span style={{ color: 'rgba(255,255,255,0.3)' }}>{c.membership}</span>
+                            <span style={{ color: c.door_triggered ? '#4ade80' : 'rgba(255,255,255,0.2)', fontSize: 10 }}>
+                              {c.door_triggered ? '🚪✓' : ''}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </details>
+                )}
+
                 {/* RESULT — two-column: left=profile, right=QR+stats */}
                 {selectedUser && (
                   <div className="w-full mx-auto bg-zinc-900 rounded-xl overflow-hidden" style={{ border: `2px solid ${selectedUser.isActive ? '#00d4aa' : '#ef4444'}` }}>
@@ -825,12 +946,12 @@ export function AdminDashboard() {
                       </div>
                     </div>
 
-                    {/* RIGHT DIV: QR Code and Status */}
-                    <div className="bg-zinc-950 p-6 rounded-lg border border-zinc-800 flex flex-col items-center justify-between gap-4">
+                    {/* RIGHT DIV: QR Code, Status, Door Access */}
+                    <div className="bg-zinc-950 p-6 rounded-lg border border-zinc-800 flex flex-col items-center gap-4">
                       <div className="flex flex-col items-center">
                         <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-4">Member QR Code</h3>
                         <div className="bg-white p-3 rounded-xl">
-                          <QRCodeSVG value={JSON.stringify({ id: selectedUser.id, name: selectedUser.name, lastName: selectedUser.lastName })} size={160} level="H" includeMargin />
+                          <QRCodeSVG value={JSON.stringify({ id: selectedUser.id, name: selectedUser.name, lastName: selectedUser.lastName })} size={140} level="H" includeMargin />
                         </div>
                       </div>
 
@@ -857,6 +978,12 @@ export function AdminDashboard() {
                             {selectedUser.sessionsLeft ?? '—'}
                           </span>
                         </div>
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-xs text-zinc-500">Check-in</span>
+                          <span style={{ color: lastCheckin ? '#4ade80' : 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: 600 }}>
+                            {lastCheckin || '—'}
+                          </span>
+                        </div>
                         <div className="flex justify-between items-center">
                           <span className="text-xs text-zinc-500">Expires</span>
                           <span className="text-sm font-semibold" style={{ color: selectedUser.isActive ? '#fff' : '#ef4444' }}>
@@ -864,6 +991,22 @@ export function AdminDashboard() {
                           </span>
                         </div>
                       </div>
+
+                      {/* Door access button */}
+                      {doorUrl && selectedUser.isActive && (
+                        <button
+                          onClick={triggerDoor}
+                          style={{
+                            width: '100%', padding: '10px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                            background: doorGranted ? 'rgba(74,222,128,0.15)' : 'rgba(0,212,170,0.12)',
+                            color: doorGranted ? '#4ade80' : '#00d4aa',
+                            fontWeight: 700, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                          }}
+                        >
+                          <DoorOpen style={{ width: 16, height: 16 }} />
+                          {doorGranted ? 'Accès accordé ✓' : 'Ouvrir porte'}
+                        </button>
+                      )}
 
                       <button
                         onClick={() => { setSelectedUser(null); setScannedUserId(''); setScannedRaw({}); setSearchQuery(''); }}
