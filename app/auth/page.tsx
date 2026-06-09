@@ -183,11 +183,12 @@ export default function AuthPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: verifyEmail }),
       });
-      if (!res.ok) { const body = await res.json().catch(()=>({})); throw new Error(body?.error || 'Server error'); }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Server error');
+      setVerifyToken(data.token);
+      setShowCode(data.code || '');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Server error');
-      setSendingCode(false);
-      return;
     }
     setSendingCode(false);
   };
