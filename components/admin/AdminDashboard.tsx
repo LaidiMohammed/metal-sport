@@ -427,6 +427,53 @@ export function AdminDashboard() {
                 ))}
               </div>
 
+              {/* Raccourcis rapides */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-xs font-bold uppercase tracking-wider text-foreground/40">Raccourcis rapides</span>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                  {[
+                    { section: 'scanner' as Section, label: 'Scanner QR', icon: Scan, color: inactiveClients > 0 ? '#ef4444' : '#4ade80', desc: inactiveClients > 0 ? `${inactiveClients} inactifs` : 'Tout actif' },
+                    { section: 'clients' as Section, label: 'Clients', icon: Users, color: spamClients > 0 ? '#ef4444' : '#4ade80', desc: spamClients > 0 ? `${spamClients} spam` : `${clientUsers.length} total` },
+                    { section: 'products' as Section, label: 'Produits', icon: Package, color: (products?.length || 0) > 0 ? '#4ade80' : '#ef4444', desc: `${products?.length || 0} produits` },
+                    { section: 'workers' as Section, label: 'Employés', icon: Briefcase, color: activeWorkerCount > 0 ? '#4ade80' : '#ef4444', desc: `${activeWorkerCount} actifs` },
+                    { section: 'scanner' as Section, label: 'Porte', icon: DoorOpen, color: doorUrl ? '#4ade80' : '#ef4444', desc: doorUrl ? 'Connectée' : 'Non configurée' },
+                  ].map((shortcut, i) => (
+                    <motion.button
+                      key={shortcut.label}
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 + i * 0.04 }}
+                      onClick={() => setActiveSection(shortcut.section)}
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      style={{
+                        padding: '14px 16px', borderRadius: 12, cursor: 'pointer',
+                        border: `1px solid ${shortcut.color}22`,
+                        background: `${shortcut.color}08`,
+                        textAlign: 'left', transition: 'all 0.2s',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                        <div style={{
+                          width: 32, height: 32, borderRadius: 8,
+                          background: `${shortcut.color}18`,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                          <shortcut.icon style={{ width: 15, height: 15, color: shortcut.color }} />
+                        </div>
+                        <span style={{ color: '#fff', fontWeight: 700, fontSize: 13 }}>{shortcut.label}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <div style={{ width: 8, height: 8, borderRadius: '50%', background: shortcut.color }} />
+                        <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11 }}>{shortcut.desc}</span>
+                      </div>
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+
               {/* Charts */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <motion.div
