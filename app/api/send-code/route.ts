@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 import { createToken } from '@/lib/verification-token';
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.SMTP_EMAIL,
+    pass: process.env.SMTP_PASSWORD,
+  },
+});
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,11 +20,10 @@ export async function POST(req: NextRequest) {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const token = createToken(email, code);
 
-    // Send email via Resend (may fail if domain not verified)
     let emailSent = false;
     try {
-      await resend.emails.send({
-        from: 'metal.sport.31 <metal.sport.31@gym31.com>',
+      await transporter.sendMail({
+        from: `"Metal Sport Gym" <${process.env.SMTP_EMAIL}>`,
         to: email,
         subject: 'Your verification code for metal.sport.31',
         text: `Your verification code is: ${code}\n\nThis code expires in 10 minutes.`,
@@ -34,8 +41,8 @@ export async function POST(req: NextRequest) {
           </div>`,
       });
       emailSent = true;
-    } catch {
-      console.log(`[DEV] Email delivery unavailable — showing code on screen for ${email}`);
+    } catch (err: any) {
+      console.log(`[DEV] Email failed: ${err?.message}`);
     }
 
     return NextResponse.json({ token, code: emailSent ? undefined : code, emailSent });
