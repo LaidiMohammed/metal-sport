@@ -9,12 +9,8 @@ export const metadata: Metadata = {
   title: 'Metal Sport Gym | Premium Fitness Experience',
   description: 'Advanced fitness platform with 3D exercise visualization, AI coaching, and premium gear',
   icons: {
-    icon: [
-      { url: '/icon-light.svg', type: 'image/svg+xml', media: '(prefers-color-scheme: light)' },
-      { url: '/icon-dark.svg', type: 'image/svg+xml', media: '(prefers-color-scheme: dark)' },
-      { url: '/icon.svg', type: 'image/svg+xml' },
-    ],
-    apple: { url: '/icon.svg', type: 'image/svg+xml' },
+    icon: '/images/logo.jpg',
+    apple: '/images/logo.jpg',
   },
 }
 
