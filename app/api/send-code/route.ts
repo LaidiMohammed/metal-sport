@@ -12,7 +12,8 @@ export async function POST(req: NextRequest) {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const token = createToken(email, code);
 
-    // Send email via Resend
+    // Send email via Resend (may fail if domain not verified)
+    let emailSent = false;
     try {
       await resend.emails.send({
         from: 'metal.sport.31 <metal.sport.31@gym31.com>',
@@ -32,11 +33,12 @@ export async function POST(req: NextRequest) {
             </div>
           </div>`,
       });
+      emailSent = true;
     } catch {
-      console.log(`[DEV] Email send failed — code for ${email}: ${code}`);
+      console.log(`[DEV] Email delivery unavailable — showing code on screen for ${email}`);
     }
 
-    return NextResponse.json({ token });
+    return NextResponse.json({ token, code: emailSent ? undefined : code, emailSent });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

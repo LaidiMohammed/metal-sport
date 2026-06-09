@@ -92,6 +92,7 @@ export default function AuthPage() {
   const [verifyName,     setVerifyName]     = useState('');
   const [sendingCode,    setSendingCode]    = useState(false);
   const [verifyToken,    setVerifyToken]    = useState('');
+  const [showCode,       setShowCode]       = useState('');
 
   // ── Shared ────────────────────────────────────────────────────────────────
   const [loginEmail,  setLoginEmail]  = useState('');
@@ -215,6 +216,7 @@ export default function AuthPage() {
       if (!res.ok) throw new Error(data.error || 'Failed to send code');
       setVerifyEmail(email);
       setVerifyToken(data.token);
+      setShowCode(data.code || '');
       setStep(3);
     } catch (e: any) {
       setError(e.message || 'Failed to send verification code');
@@ -755,8 +757,18 @@ export default function AuthPage() {
                       To: <span className="text-emerald-700 font-medium">{verifyEmail}</span>
                     </div>
                     <p className="text-sm text-emerald-700">
-                      <span className="text-base">✉️</span> A 6-digit code has been sent to <strong>{verifyEmail}</strong>. Check your inbox (and spam folder).
+                      <span className="text-base">{showCode ? '⚠️' : '✉️'}</span> {showCode
+                        ? "Email delivery unavailable. Use the code below:"
+                        : <>A 6-digit code has been sent to <strong>{verifyEmail}</strong>. Check your inbox (and spam folder).</>}
                     </p>
+                    {showCode && (
+                      <div className="mt-3 text-center">
+                        <div className="inline-block text-3xl font-black tracking-[0.3em] text-emerald-700 bg-emerald-100 px-6 py-3 rounded-xl border border-emerald-300">
+                          {showCode}
+                        </div>
+                        <p className="text-[10px] text-emerald-400 mt-1">Code expires in 10 min</p>
+                      </div>
+                    )}
                   </div>
 
                   {/* 6 code inputs */}
