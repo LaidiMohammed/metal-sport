@@ -46,3 +46,38 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: err.message }, { status: 400 });
   }
 }
+
+export async function PUT(req: Request) {
+  try {
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const token = authHeader.slice(7);
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const updates: Record<string, any> = {};
+    if (body.name !== undefined) updates.name = body.name;
+    if (body.lastName !== undefined) updates.last_name = body.lastName;
+    if (body.height !== undefined) updates.height = Number(body.height);
+    if (body.weight !== undefined) updates.weight = Number(body.weight);
+    if (body.age !== undefined) updates.age = Number(body.age);
+    if (body.sex !== undefined) updates.sex = body.sex;
+
+    const { data, error } = await supabaseAdmin
+      .from('profiles')
+      .update(updates)
+      .eq('id', user.id)
+      .select()
+      .maybeSingle();
+
+    if (error) throw error;
+    return NextResponse.json({ profile: data });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 400 });
+  }
+}

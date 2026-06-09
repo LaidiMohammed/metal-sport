@@ -9,6 +9,7 @@ import {
   Dumbbell, Clock, Flame, Target, Plus, Trash2, Play, Pencil,
   ChevronRight, CheckCircle2, XCircle, BarChart3, Calendar,
   Zap, Award, TrendingUp, X, Timer, ChevronLeft,
+  Activity, Shield, Search, Move, List, Check,
 } from 'lucide-react';
 import { useStore } from '@/lib/store';
 import { exercises } from '@/lib/exercises-data';
@@ -46,43 +47,48 @@ interface ScheduledWorkout {
   exerciseIds: string[];
 }
 
+// ── Lucide icon map for plans ──────────────────────────────────────────────
+const PLAN_ICONS: Record<string, React.ComponentType<any>> = {
+  '1': Dumbbell, '2': Zap, '3': Activity, '4': Target, '5': TrendingUp, '6': Shield,
+};
+
 // ── Data ──────────────────────────────────────────────────────────────────────
 const PLANS: WorkoutPlan[] = [
   {
     id: '1', name: 'Upper Body Strength', duration: 60, exercises: 8,
     difficulty: 'Intermediate', category: 'Strength',
     gradient: 'linear-gradient(135deg, #00d4aa 0%, #0891b2 100%)',
-    icon: '💪', calories: 420, muscles: ['Chest', 'Back', 'Shoulders'],
+    icon: 'Dumbbell', calories: 420, muscles: ['Chest', 'Back', 'Shoulders'],
   },
   {
     id: '2', name: 'Lower Body Power', duration: 50, exercises: 6,
     difficulty: 'Advanced', category: 'Power',
     gradient: 'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)',
-    icon: '🦵', calories: 510, muscles: ['Quads', 'Glutes', 'Hamstrings'],
+    icon: 'Zap', calories: 510, muscles: ['Quads', 'Glutes', 'Hamstrings'],
   },
   {
     id: '3', name: 'Full Body HIIT', duration: 35, exercises: 10,
     difficulty: 'Beginner', category: 'HIIT',
     gradient: 'linear-gradient(135deg, #a855f7 0%, #ec4899 100%)',
-    icon: '⚡', calories: 380, muscles: ['Full Body'],
+    icon: 'Activity', calories: 380, muscles: ['Full Body'],
   },
   {
     id: '4', name: 'Core & Stability', duration: 30, exercises: 7,
     difficulty: 'Beginner', category: 'Core',
     gradient: 'linear-gradient(135deg, #22c55e 0%, #059669 100%)',
-    icon: '🎯', calories: 250, muscles: ['Abs', 'Obliques', 'Lower Back'],
+    icon: 'Target', calories: 250, muscles: ['Abs', 'Obliques', 'Lower Back'],
   },
   {
     id: '5', name: 'Chest & Triceps', duration: 55, exercises: 9,
     difficulty: 'Intermediate', category: 'Strength',
     gradient: 'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)',
-    icon: '🏋️', calories: 390, muscles: ['Chest', 'Triceps'],
+    icon: 'TrendingUp', calories: 390, muscles: ['Chest', 'Triceps'],
   },
   {
     id: '6', name: 'Back & Biceps', duration: 60, exercises: 8,
     difficulty: 'Advanced', category: 'Strength',
     gradient: 'linear-gradient(135deg, #f97316 0%, #dc2626 100%)',
-    icon: '🔥', calories: 450, muscles: ['Lats', 'Biceps', 'Rear Delts'],
+    icon: 'Shield', calories: 450, muscles: ['Lats', 'Biceps', 'Rear Delts'],
   },
 ];
 
@@ -110,8 +116,19 @@ export default function WorkoutsPage() {
   const [logs, setLogs] = useState<WorkoutLog[]>(INITIAL_LOGS);
   const [activePlan, setActivePlan] = useState<WorkoutPlan | null>(null);
   const [activeTab, setActiveTab] = useState(0);
-  const [timerActive, setTimerActive] = useState(false);
   const [anatomyCategory, setAnatomyCategory] = useState<string | null>(null);
+
+  // Workout modal state
+  const [workoutRunning, setWorkoutRunning] = useState(false);
+  const [workoutElapsed, setWorkoutElapsed] = useState(0);
+  const [workoutCompleted, setWorkoutCompleted] = useState<string[]>([]);
+  const workoutTimerRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (workoutRunning) { workoutTimerRef.current = setInterval(() => setWorkoutElapsed(p => p + 1), 1000); }
+    else clearInterval(workoutTimerRef.current);
+    return () => clearInterval(workoutTimerRef.current);
+  }, [workoutRunning]);
 
   // Planner state
   const today = new Date();
@@ -464,7 +481,9 @@ export default function WorkoutsPage() {
                             {/* Gradient bar */}
                             <div style={{ width: 4, height: 48, borderRadius: 99, background: plan.gradient, flexShrink: 0 }} />
 
-                            <div style={{ fontSize: 28, width: 40, textAlign: 'center', flexShrink: 0 }}>{plan.icon}</div>
+                            <div style={{ width: 40, height: 40, borderRadius: 10, background: `${plan.gradient}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                              {(() => { const Icon = PLAN_ICONS[plan.id]; return Icon ? <Icon style={{ width: 18, height: 18, color: '#fff' }} /> : null; })()}
+                            </div>
 
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
@@ -576,7 +595,7 @@ export default function WorkoutsPage() {
                               }}
                             >
                               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                <span style={{ fontSize: 18 }}>{p.icon}</span>
+                                {(() => { const Icon = PLAN_ICONS[p.id]; return Icon ? <Icon style={{ width: 16, height: 16, color: selectedPlanId === p.id ? '#fff' : 'rgba(255,255,255,0.5)' }} /> : null; })()}
                                 <span style={{ color: selectedPlanId === p.id ? '#fff' : 'rgba(255,255,255,0.7)', fontWeight: 700, fontSize: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</span>
                               </div>
                               <p style={{ color: selectedPlanId === p.id ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.3)', fontSize: 10, marginTop: 2 }}>{p.duration}min · {p.exercises} exercises</p>
@@ -646,7 +665,7 @@ export default function WorkoutsPage() {
                                   border: '1px solid var(--border)', background: 'rgba(255,255,255,0.04)', color: '#fff',
                                 }}
                               />
-                              <span style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.2)', fontSize: 13, pointerEvents: 'none' }}>🔍</span>
+                              <Search style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.2)', width: 14, height: 14, pointerEvents: 'none' }} />
                             </div>
                             {searchFiltered.length > 0 && (
                               <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 6, maxHeight: 130, overflowY: 'auto', padding: '4px 0' }}>
@@ -703,7 +722,7 @@ export default function WorkoutsPage() {
                           <div style={{ flex: 1 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                               <span style={{ color: '#fff', fontWeight: 700, fontSize: 14 }}>{s.name}</span>
-                              <span style={{ fontSize: 16 }}>{plan?.icon || '🏋️'}</span>
+                              {(() => { if (!plan) return <Dumbbell style={{ width: 16, height: 16, color: 'rgba(255,255,255,0.3)' }} />; const Icon = PLAN_ICONS[plan.id]; return Icon ? <Icon style={{ width: 16, height: 16 }} /> : null; })()}
                             </div>
                             <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, display: 'flex', gap: 12, marginTop: 2 }}>
                               <span>{s.date}</span>
@@ -895,7 +914,7 @@ export default function WorkoutsPage() {
                     <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 16 }}>Streak & Goals</h3>
                   </div>
                   <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                    <div style={{ fontSize: 56, marginBottom: 8 }}>🔥</div>
+                    <Flame style={{ width: 56, height: 56, color: '#f59e0b', margin: '0 auto 8px' }} />
                     <p style={{ color: '#fff', fontSize: 42, fontWeight: 900, letterSpacing: '-0.03em' }}>5</p>
                     <p style={{ color: '#f59e0b', fontSize: 14, fontWeight: 600 }}>Day Streak</p>
                     <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, marginTop: 8 }}>Best: 12 days</p>
@@ -937,113 +956,128 @@ export default function WorkoutsPage() {
         </AnimatePresence>
       </div>
 
-      {/* ── Start Workout Modal ──────────────────────────────────────────────── */}
+      {/* ── Workout Modal (exercises + stopwatch + save) ───────────────────── */}
       <AnimatePresence>
-        {activePlan && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
-            onClick={() => { setActivePlan(null); setTimerActive(false); }}
-          >
+        {activePlan && (() => {
+          const planExercises = getExercisesForPlan(activePlan);
+          const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+          const toggleEx = (id: string) => setWorkoutCompleted(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
+          const finishWorkout = async () => {
+            if (!activePlan) return;
+            for (const ex of planExercises) {
+              if (workoutCompleted.includes(ex.id)) {
+                await fetch('/api/workouts', {
+                  method: 'POST', headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ user_id: user?.id, exercise_id: `${activePlan.name} — ${ex.name}`, duration: Math.round(workoutElapsed / planExercises.length), reps: 12, completed: true, date: new Date().toISOString() }),
+                });
+              }
+            }
+            if (workoutCompleted.length > 0) await saveCompletedWorkout(activePlan.name, workoutElapsed);
+            setWorkoutRunning(false); setWorkoutElapsed(0); setWorkoutCompleted([]); setActivePlan(null);
+          };
+
+          return (
             <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 30 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 30 }}
-              transition={{ type: 'spring', damping: 22, stiffness: 260 }}
-              style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 24, padding: 'clamp(16px, 4vw, 32px)', maxWidth: 440, width: '100%', position: 'relative' }}
-              onClick={(e) => e.stopPropagation()}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+              onClick={() => { if (!workoutRunning) { setActivePlan(null); setWorkoutElapsed(0); setWorkoutCompleted([]); } }}
             >
-              {/* Close */}
-              <button
-                onClick={() => { setActivePlan(null); setTimerActive(false); }}
-                style={{ position: 'absolute', top: 16, right: 16, background: 'rgba(var(--card-rgb, 18,18,18), 0.5)', border: '1px solid var(--border)', borderRadius: 8, padding: 8, cursor: 'pointer', color: '#fff' }}
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0, y: 30 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 30 }}
+                transition={{ type: 'spring', damping: 22, stiffness: 260 }}
+                style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 24, maxWidth: 500, width: '100%', maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
+                onClick={(e) => e.stopPropagation()}
               >
-                <X style={{ width: 18, height: 18 }} />
-              </button>
-
-              {/* Header stripe */}
-              <div style={{ height: 5, background: activePlan.gradient, borderRadius: 99, marginBottom: 24 }} />
-
-              <div style={{ fontSize: 40, marginBottom: 12 }}>{activePlan.icon}</div>
-              <h2 style={{ color: '#fff', fontSize: 24, fontWeight: 800, marginBottom: 6 }}>{activePlan.name}</h2>
-              <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14, marginBottom: 24 }}>
-                {activePlan.muscles.join(' • ')}
-              </p>
-
-              {/* Metrics */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                {[
-                  { icon: Clock,  label: 'Duration',  value: `${activePlan.duration}m` },
-                  { icon: Target, label: 'Exercises', value: activePlan.exercises },
-                  { icon: Flame,  label: 'Calories',  value: `~${activePlan.calories}` },
-                ].map((m) => (
-                  <div key={m.label} style={{ textAlign: 'center', padding: '14px', background: 'rgba(var(--card-rgb, 18,18,18), 0.5)', borderRadius: 12, border: '1px solid var(--border)' }}>
-                    <m.icon style={{ width: 18, height: 18, color: '#00d4aa', margin: '0 auto 6px' }} />
-                    <p style={{ color: '#fff', fontWeight: 800, fontSize: 18 }}>{m.value}</p>
-                    <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11 }}>{m.label}</p>
+                {/* Header */}
+                <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 14 }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 12, background: `${activePlan.gradient}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    {(() => { const Icon = PLAN_ICONS[activePlan.id]; return Icon ? <Icon style={{ width: 22, height: 22, color: '#fff' }} /> : null; })()}
                   </div>
-                ))}
-              </div>
-
-              {/* Timer toggle */}
-              {timerActive && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  style={{ padding: '16px', background: 'rgba(0,212,170,0.08)', border: '1px solid rgba(0,212,170,0.2)', borderRadius: 12, marginBottom: 16 }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 12 }}>
-                    <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}>
-                      <Timer style={{ width: 20, height: 20, color: '#00d4aa' }} />
-                    </motion.div>
-                    <span style={{ color: '#00d4aa', fontWeight: 700, fontSize: 16 }}>Workout in progress…</span>
+                  <div style={{ flex: 1 }}>
+                    <h2 style={{ color: '#fff', fontWeight: 800, fontSize: 17 }}>{activePlan.name}</h2>
+                    <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>{activePlan.muscles.join(' • ')} · {planExercises.length} exercises</p>
                   </div>
-                  <button
-                    onClick={async () => {
-                      if (!activePlan) return;
-                      await saveCompletedWorkout(activePlan.name, activePlan.duration);
-                      setTimerActive(false);
-                      setActivePlan(null);
-                    }}
-                    style={{ width: '100%', padding: '10px', borderRadius: 10, border: 'none', background: 'rgba(0,212,170,0.2)', color: '#00d4aa', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
-                  >
-                    Complete & Save
+                  <button onClick={() => { setActivePlan(null); setWorkoutRunning(false); setWorkoutElapsed(0); setWorkoutCompleted([]); }} style={{ background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 8, padding: 8, cursor: 'pointer', color: '#fff' }}>
+                    <X style={{ width: 16, height: 16 }} />
                   </button>
-                </motion.div>
-              )}
+                </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <motion.button
-                  whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                  onClick={() => setTimerActive(true)}
-                  style={{
-                    width: '100%', padding: '14px', borderRadius: 12, border: 'none',
-                    background: activePlan.gradient, color: '#fff',
-                    fontWeight: 800, fontSize: 16, cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
-                  }}
-                >
-                  <Play style={{ width: 18, height: 18 }} />
-                  {timerActive ? 'Already Running' : 'Begin Workout'}
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                  onClick={() => { setActivePlan(null); setTimerActive(false); }}
-                  style={{
-                    width: '100%', padding: '12px', borderRadius: 12,
-                    border: '1px solid rgba(255,255,255,0.1)', background: 'transparent',
-                    color: 'rgba(255,255,255,0.6)', fontWeight: 600, fontSize: 14, cursor: 'pointer',
-                  }}
-                >
-                  Cancel
-                </motion.button>
-              </div>
+                {/* Stopwatch */}
+                <div style={{ padding: '16px 24px', background: 'rgba(0,212,170,0.05)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <Timer style={{ width: 18, height: 18, color: '#00d4aa' }} />
+                    <span style={{ color: '#fff', fontSize: 28, fontWeight: 800, fontFamily: 'monospace', letterSpacing: '0.05em' }}>{fmt(workoutElapsed)}</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    {!workoutRunning ? (
+                      <button onClick={() => setWorkoutRunning(true)} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #00d4aa, #00b896)', color: '#000', fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <Play style={{ width: 14, height: 14 }} /> Démarrer
+                      </button>
+                    ) : (
+                      <button onClick={() => setWorkoutRunning(false)} style={{ padding: '8px 18px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', color: 'rgba(255,255,255,0.6)', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
+                        Pause
+                      </button>
+                    )}
+                    {workoutElapsed > 0 && !workoutRunning && (
+                      <button onClick={() => { setWorkoutElapsed(0); setWorkoutCompleted([]); }} style={{ padding: '8px', borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.08)', color: '#fff', cursor: 'pointer' }}>
+                        <X style={{ width: 14, height: 14 }} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Exercise list */}
+                <div style={{ flex: 1, overflowY: 'auto', padding: '12px 24px 20px' }}>
+                  <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10 }}>{workoutCompleted.length}/{planExercises.length} Exercise{planExercises.length > 1 ? 's' : ''} completed</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {planExercises.map((ex, i) => {
+                      const done = workoutCompleted.includes(ex.id);
+                      return (
+                        <motion.div
+                          key={ex.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }}
+                          onClick={() => workoutRunning && toggleEx(ex.id)}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 12, cursor: workoutRunning ? 'pointer' : 'default',
+                            background: done ? 'rgba(0,212,170,0.08)' : 'rgba(255,255,255,0.03)',
+                            border: `1px solid ${done ? 'rgba(0,212,170,0.2)' : 'var(--border)'}`,
+                            transition: 'all 0.15s',
+                          }}
+                        >
+                          <div style={{ width: 36, height: 36, borderRadius: 8, overflow: 'hidden', background: 'rgba(255,255,255,0.08)', flexShrink: 0 }}>
+                            <img src={ex.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                              <span style={{ color: done ? '#00d4aa' : '#fff', fontWeight: 700, fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ex.name}</span>
+                              <span style={{ padding: '1px 6px', borderRadius: 10, fontSize: 9, fontWeight: 600, background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)', whiteSpace: 'nowrap' }}>{ex.equipment}</span>
+                            </div>
+                            <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11, marginTop: 1 }}>{ex.primaryMuscle} · {ex.difficulty}</p>
+                          </div>
+                          <div style={{ width: 26, height: 26, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: done ? '#00d4aa' : 'rgba(255,255,255,0.08)', border: `2px solid ${done ? '#00d4aa' : 'rgba(255,255,255,0.15)'}`, transition: 'all 0.2s' }}>
+                            {done && <Check style={{ width: 14, height: 14, color: '#000' }} />}
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Footer */}
+                <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border)', display: 'flex', gap: 10 }}>
+                  <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={finishWorkout} disabled={workoutCompleted.length === 0}
+                    style={{ flex: 1, padding: '12px', borderRadius: 12, border: 'none', background: workoutCompleted.length > 0 ? 'linear-gradient(135deg, #00d4aa, #00b896)' : 'rgba(255,255,255,0.08)', color: workoutCompleted.length > 0 ? '#000' : 'rgba(255,255,255,0.3)', fontWeight: 700, fontSize: 14, cursor: workoutCompleted.length > 0 ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                    <Check style={{ width: 16, height: 16 }} /> Terminer ({workoutCompleted.length}/{planExercises.length})
+                  </motion.button>
+                  <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                    onClick={() => { setActivePlan(null); setWorkoutRunning(false); setWorkoutElapsed(0); setWorkoutCompleted([]); }}
+                    style={{ padding: '12px 20px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: 'rgba(255,255,255,0.5)', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>
+                    Fermer
+                  </motion.button>
+                </div>
+              </motion.div>
             </motion.div>
-          </motion.div>
-        )}
+          );
+        })()}
       </AnimatePresence>
     </div>
   );
