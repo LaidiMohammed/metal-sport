@@ -162,7 +162,7 @@ export default function AuthPage() {
       const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, name: firstName, lastName, code, token: verifyToken }),
+        body: JSON.stringify({ email, password, name: firstName, lastName, code, token: verifyToken, age: Number(age), height: Number(height), weight: Number(weight), gymLevel }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Verification failed');

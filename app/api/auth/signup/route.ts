@@ -4,7 +4,7 @@ import { verifyToken } from '@/lib/verification-token';
 
 export async function POST(req: Request) {
   try {
-    const { email, password, name, lastName, code, token } = await req.json();
+    const { email, password, name, lastName, code, token, age, height, weight, gymLevel } = await req.json();
     if (!code || !token) {
       return NextResponse.json({ error: 'Verification code and token required' }, { status: 400 });
     }
@@ -30,6 +30,10 @@ export async function POST(req: Request) {
       last_name: lastName || '',
       email,
       role: 'user',
+      age: age || null,
+      height: height || null,
+      weight: weight || null,
+      sex: gymLevel === 'never' || gymLevel === 'beginner' ? 'other' : 'male',
     });
 
     if (profileError) throw profileError;
