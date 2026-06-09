@@ -26,6 +26,7 @@ interface WorkoutPlan {
   icon: string;
   calories: number;
   muscles: string[];
+  exerciseIds?: string[];
 }
 
 interface WorkoutLog {
@@ -49,7 +50,7 @@ interface ScheduledWorkout {
 
 // ── Lucide icon map for plans ──────────────────────────────────────────────
 const PLAN_ICONS: Record<string, React.ComponentType<any>> = {
-  '1': Dumbbell, '2': Zap, '3': Activity, '4': Target, '5': TrendingUp, '6': Shield,
+  '1': Dumbbell, '2': Zap, '3': Activity, '4': Target, '5': TrendingUp, '6': Shield, 'List': List,
 };
 
 // ── Data ──────────────────────────────────────────────────────────────────────
@@ -123,6 +124,53 @@ export default function WorkoutsPage() {
   const [workoutElapsed, setWorkoutElapsed] = useState(0);
   const [workoutCompleted, setWorkoutCompleted] = useState<string[]>([]);
   const workoutTimerRef = useRef<any>(null);
+
+  // Custom plan state
+  const [showCustomPlanner, setShowCustomPlanner] = useState(false);
+  const [customPlans, setCustomPlans] = useState<WorkoutPlan[]>([]);
+  const [customName, setCustomName] = useState('');
+  const [customExIds, setCustomExIds] = useState<string[]>([]);
+  const [customSearch, setCustomSearch] = useState('');
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('kimo-custom-plans');
+      if (stored) setCustomPlans(JSON.parse(stored));
+    } catch {}
+  }, []);
+
+  const saveCustomPlan = () => {
+    if (!customName.trim() || customExIds.length === 0) return;
+    const matched = exercises.filter(e => customExIds.includes(e.id));
+    const muscles = [...new Set(matched.map(e => e.primaryMuscle))];
+    const newPlan: WorkoutPlan = {
+      id: 'custom_' + Date.now(),
+      name: customName.trim(),
+      duration: customExIds.length * 5,
+      exercises: customExIds.length,
+      difficulty: 'Beginner',
+      category: 'Custom',
+      gradient: 'linear-gradient(135deg, #a855f7 0%, #6366f1 100%)',
+      icon: 'List',
+      calories: customExIds.length * 50,
+      muscles: muscles.length > 0 ? muscles : ['Custom'],
+      exerciseIds: customExIds,
+    };
+    const updated = [...customPlans, newPlan];
+    setCustomPlans(updated);
+    localStorage.setItem('kimo-custom-plans', JSON.stringify(updated));
+    setCustomName(''); setCustomExIds([]); setCustomSearch('');
+    setShowCustomPlanner(false);
+  };
+
+  const deleteCustomPlan = (id: string) => {
+    const updated = customPlans.filter(p => p.id !== id);
+    setCustomPlans(updated);
+    localStorage.setItem('kimo-custom-plans', JSON.stringify(updated));
+  };
+
+  // Merge preset + custom plans
+  const allPlans = [...PLANS, ...customPlans];
 
   useEffect(() => {
     if (workoutRunning) { workoutTimerRef.current = setInterval(() => setWorkoutElapsed(p => p + 1), 1000); }
@@ -213,6 +261,9 @@ export default function WorkoutsPage() {
   useEffect(() => { fetchWorkouts(); }, [user?.id]);
 
   const getExercisesForPlan = (plan: WorkoutPlan) => {
+    if (plan.exerciseIds && plan.exerciseIds.length > 0) {
+      return exercises.filter(e => plan.exerciseIds!.includes(e.id));
+    }
     const keywords = plan.muscles.flatMap(m => m.toLowerCase().split(' & ').flatMap(s => s.split(' ')));
     return exercises.filter(e => {
       const target = (e.primaryMuscle + ' ' + e.category + ' ' + e.name).toLowerCase();
@@ -271,18 +322,19 @@ export default function WorkoutsPage() {
   };
 
   const filteredPlans = useMemo(() => {
-    if (!anatomyCategory) return PLANS;
-    return PLANS.filter((plan) =>
+    const source = [...PLANS, ...customPlans];
+    if (!anatomyCategory) return source;
+    return source.filter((plan) =>
       plan.muscles.some((m) =>
         m.toLowerCase().includes(anatomyCategory.toLowerCase()) ||
         (anatomyCategory === 'Arms' && ['Biceps', 'Triceps', 'Forearms'].some((a) => m.toLowerCase().includes(a.toLowerCase()))) ||
-        (anatomyCategory === 'Core' && ['Abs', 'Obliques'].some((c) => m.toLowerCase().includes(c.toLowerCase()))) ||
-        (anatomyCategory === 'Legs' && ['Quads', 'Glutes', 'Hamstrings', 'Calves'].some((l) => m.toLowerCase().includes(l.toLowerCase()))) ||
-        (anatomyCategory === 'Back' && ['Lats', 'Traps'].some((b) => m.toLowerCase().includes(b.toLowerCase()))) ||
+        (anatomyCategory === 'Core' && ['Abs', 'Obliques'].some((c) => c.toLowerCase().includes(c.toLowerCase()))) ||
+        (anatomyCategory === 'Legs' && ['Quads', 'Glutes', 'Hamstrings', 'Calves'].some((l) => l.toLowerCase().includes(l.toLowerCase()))) ||
+        (anatomyCategory === 'Back' && ['Lats', 'Traps'].some((b) => b.toLowerCase().includes(b.toLowerCase()))) ||
         (anatomyCategory === 'Chest' && m.toLowerCase().includes('chest'))
       )
     );
-  }, [anatomyCategory]);
+  }, [anatomyCategory, customPlans]);
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -443,6 +495,7 @@ export default function WorkoutsPage() {
                     </h2>
                     <motion.button
                       whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
+                      onClick={() => { setCustomName(''); setCustomExIds([]); setCustomSearch(''); setShowCustomPlanner(true); }}
                       style={{
                         display: 'flex', alignItems: 'center', gap: 8,
                         padding: '10px 20px', borderRadius: 10, border: 'none',
@@ -582,7 +635,7 @@ export default function WorkoutsPage() {
                       <div>
                         <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Choose Program</p>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, maxHeight: 180, overflowY: 'auto' }}>
-                          {PLANS.map(p => (
+                          {[...PLANS, ...customPlans].map(p => (
                             <motion.button
                               key={p.id}
                               whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
@@ -641,7 +694,7 @@ export default function WorkoutsPage() {
                                 >
                                   <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: 10, fontWeight: 700, minWidth: 14 }}>{idx + 1}</span>
                                   <span style={{ width: 22, height: 22, borderRadius: 4, overflow: 'hidden', background: 'rgba(255,255,255,0.1)', flexShrink: 0 }}>
-                                    <img src={e.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    <img src={e.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(ev) => { (ev.target as HTMLImageElement).style.display = 'none'; }} />
                                   </span>
                                   <span style={{ color: '#fff', fontSize: 12, fontWeight: 600, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.name}</span>
                                   <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 10 }}>{e.equipment}</span>
@@ -677,7 +730,7 @@ export default function WorkoutsPage() {
                                     onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)'; }}
                                   >
                                     <span style={{ width: 20, height: 20, borderRadius: 4, overflow: 'hidden', background: 'rgba(255,255,255,0.1)', flexShrink: 0 }}>
-                                      <img src={e.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                      <img src={e.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(ev) => { (ev.target as HTMLImageElement).style.display = 'none'; }} />
                                     </span>
                                     <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11, fontWeight: 600, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.name}</span>
                                     <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: 10, whiteSpace: 'nowrap' }}>{e.equipment}</span>
@@ -1044,7 +1097,7 @@ export default function WorkoutsPage() {
                           }}
                         >
                           <div style={{ width: 36, height: 36, borderRadius: 8, overflow: 'hidden', background: 'rgba(255,255,255,0.08)', flexShrink: 0 }}>
-                            <img src={ex.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            <img src={ex.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(ev) => { (ev.target as HTMLImageElement).style.display = 'none'; }} />
                           </div>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -1078,6 +1131,90 @@ export default function WorkoutsPage() {
             </motion.div>
           );
         })()}
+      </AnimatePresence>
+
+      {/* ── Custom Plan Creator Modal ── */}
+      <AnimatePresence>
+        {showCustomPlanner && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+            onClick={() => setShowCustomPlanner(false)}
+          >
+            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+              style={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 24, maxWidth: 480, width: '100%', maxHeight: '85vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(168,85,247,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <List style={{ width: 20, height: 20, color: '#a855f7' }} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <h2 style={{ color: '#fff', fontWeight: 800, fontSize: 17 }}>Custom Plan</h2>
+                  <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>Create your own workout routine</p>
+                </div>
+                <button onClick={() => setShowCustomPlanner(false)} style={{ background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 8, padding: 8, cursor: 'pointer', color: '#fff' }}>
+                  <X style={{ width: 16, height: 16 }} />
+                </button>
+              </div>
+
+              <div style={{ padding: '16px 24px', overflowY: 'auto', flex: 1 }}>
+                {/* Plan name */}
+                <div style={{ marginBottom: 16 }}>
+                  <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>Plan Name</p>
+                  <input value={customName} onChange={e => setCustomName(e.target.value)} placeholder="e.g. My Push Day"
+                    style={{ width: '100%', padding: '10px 14px', borderRadius: 10, border: '1px solid var(--border)', background: 'rgba(255,255,255,0.04)', color: '#fff', fontSize: 14, outline: 'none' }} />
+                </div>
+
+                {/* Exercise search */}
+                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>
+                  Exercises ({customExIds.length} selected)
+                </p>
+                <div style={{ position: 'relative', marginBottom: 8 }}>
+                  <input value={customSearch} onChange={e => setCustomSearch(e.target.value)} placeholder="Search exercises…"
+                    style={{ width: '100%', padding: '8px 10px 8px 32px', borderRadius: 8, fontSize: 12, outline: 'none', border: '1px solid var(--border)', background: 'rgba(255,255,255,0.04)', color: '#fff' }} />
+                  <Search style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', width: 13, height: 13, color: 'rgba(255,255,255,0.2)' }} />
+                </div>
+
+                {/* Exercise list */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 5, maxHeight: 260, overflowY: 'auto', paddingRight: 4 }}>
+                  {exercises.filter(e => !customSearch || e.name.toLowerCase().includes(customSearch.toLowerCase()) || e.primaryMuscle.toLowerCase().includes(customSearch.toLowerCase())).map((ex, i) => {
+                    const selected = customExIds.includes(ex.id);
+                    return (
+                      <motion.div key={ex.id} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.01 }}
+                        onClick={() => setCustomExIds(p => selected ? p.filter(id => id !== ex.id) : [...p, ex.id])}
+                        style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 10, cursor: 'pointer', background: selected ? 'rgba(168,85,247,0.12)' : 'rgba(255,255,255,0.03)', border: `1px solid ${selected ? 'rgba(168,85,247,0.25)' : 'transparent'}`, transition: 'all 0.12s' }}
+                        onMouseEnter={e => { if (!selected) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)'; }}
+                        onMouseLeave={e => { if (!selected) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)'; }}
+                      >
+                        <div style={{ width: 28, height: 28, borderRadius: 6, overflow: 'hidden', background: 'rgba(255,255,255,0.06)', flexShrink: 0 }}>
+                          <img src={ex.imageUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                        </div>
+                        <span style={{ color: selected ? '#c084fc' : 'rgba(255,255,255,0.8)', fontWeight: 600, fontSize: 12, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ex.name}</span>
+                        <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: 10, whiteSpace: 'nowrap' }}>{ex.equipment}</span>
+                        <div style={{ width: 22, height: 22, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: selected ? '#a855f7' : 'rgba(255,255,255,0.1)', border: `2px solid ${selected ? '#a855f7' : 'rgba(255,255,255,0.15)'}` }}>
+                          {selected && <Check style={{ width: 12, height: 12, color: '#000' }} />}
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border)', display: 'flex', gap: 10 }}>
+                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                  onClick={saveCustomPlan} disabled={!customName.trim() || customExIds.length === 0}
+                  style={{ flex: 1, padding: '12px', borderRadius: 12, border: 'none', background: customName.trim() && customExIds.length > 0 ? 'linear-gradient(135deg, #a855f7, #6366f1)' : 'rgba(255,255,255,0.08)', color: customName.trim() && customExIds.length > 0 ? '#fff' : 'rgba(255,255,255,0.3)', fontWeight: 700, fontSize: 14, cursor: customName.trim() && customExIds.length > 0 ? 'pointer' : 'not-allowed' }}>
+                  <Plus style={{ display: 'inline', width: 14, height: 14, marginRight: 6 }} /> Create Plan
+                </motion.button>
+                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                  onClick={() => setShowCustomPlanner(false)} style={{ padding: '12px 20px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: 'rgba(255,255,255,0.5)', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>
+                  Cancel
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
   );

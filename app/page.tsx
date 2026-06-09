@@ -249,6 +249,45 @@ export default function Home() {
         </Link>
       </section>
 
+      {/* ─── SPONSORS BAR ─── */}
+      <section style={{ padding: '28px 0', background: 'rgba(5,10,8,0.95)', borderTop: '1px solid rgba(0,200,160,0.08)', borderBottom: '1px solid rgba(0,200,160,0.08)', overflow: 'hidden' }}>
+        <div style={{ marginBottom: 10 }}>
+          <p style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: 9, letterSpacing: 4, textTransform: 'uppercase', color: 'rgba(0,200,160,0.3)', textAlign: 'center' }}>Official Partners</p>
+        </div>
+        <div style={{ display: 'flex', overflow: 'hidden', maskImage: 'linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)' }}>
+          <motion.div
+            style={{ display: 'flex', gap: 60, padding: '8px 30px', whiteSpace: 'nowrap', alignItems: 'center' }}
+            animate={{ x: ['0%', '-50%'] }}
+            transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
+          >
+            {[
+              'Bougelaz', 'Ifri', 'Azro', 'Lala Khdija', 'F&H Nutrition',
+              'Reborn', 'Creapure', 'On Sport', 'Adidas', 'Nike', 'Macroh', 'Hummel',
+            ].map((brand, i) => (
+              <span key={i} style={{
+                fontFamily: "'Barlow Condensed', sans-serif", fontSize: 20, fontWeight: 700, letterSpacing: 4,
+                textTransform: 'uppercase', color: i % 2 === 0 ? 'rgba(0,200,160,0.4)' : 'rgba(255,255,255,0.12)',
+                transition: 'color 0.3s',
+                padding: '8px 24px',
+                borderRight: '1px solid rgba(255,255,255,0.04)',
+              }}>{brand}</span>
+            ))}
+            {/* Duplicate for seamless loop */}
+            {[
+              'Bougelaz', 'Ifri', 'Azro', 'Lala Khdija', 'F&H Nutrition',
+              'Reborn', 'Creapure', 'On Sport', 'Adidas', 'Nike', 'Macroh', 'Hummel',
+            ].map((brand, i) => (
+              <span key={`d-${i}`} style={{
+                fontFamily: "'Barlow Condensed', sans-serif", fontSize: 20, fontWeight: 700, letterSpacing: 4,
+                textTransform: 'uppercase', color: i % 2 === 0 ? 'rgba(0,200,160,0.4)' : 'rgba(255,255,255,0.12)',
+                padding: '8px 24px',
+                borderRight: '1px solid rgba(255,255,255,0.04)',
+              }}>{brand}</span>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
       <Footer />
 
       {/* ─── INJECT KEYFRAMES ─── */}
