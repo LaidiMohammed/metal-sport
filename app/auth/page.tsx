@@ -20,6 +20,12 @@ import {
   Dumbbell,
   ShieldCheck,
   RefreshCw,
+  Zap,
+  TrendingUp,
+  Sun,
+  Leaf,
+  AlertTriangle,
+  Check,
 } from 'lucide-react';
 import { Spinner } from '@/components/ui/spinner';
 
@@ -230,11 +236,11 @@ export default function AuthPage() {
   };
 
   const gymLevels = [
-    { value: 'never',    label: 'Never trained',      emoji: '🧘' },
-    { value: 'beginner', label: 'Less than a month',   emoji: '🌱' },
-    { value: 'novice',   label: '1 – 6 months',        emoji: '💪' },
-    { value: 'inter',    label: '6 months – 2 years',  emoji: '🏋️' },
-    { value: 'advanced', label: '2+ years',             emoji: '🔥' },
+    { value: 'never',    label: 'Never trained',      icon: Sun, color: '#a855f7' },
+    { value: 'beginner', label: 'Less than a month',   icon: Leaf, color: '#22c55e' },
+    { value: 'novice',   label: '1 – 6 months',        icon: TrendingUp, color: '#3b82f6' },
+    { value: 'inter',    label: '6 months – 2 years',  icon: Dumbbell, color: '#f59e0b' },
+    { value: 'advanced', label: '2+ years',             icon: Zap, color: '#ef4444' },
   ];
 
   // ── Shared input wrapper ──────────────────────────────────────────────────
@@ -690,7 +696,9 @@ export default function AuthPage() {
                       How long have you been training?
                     </label>
                     <div className="flex flex-col gap-2">
-                      {gymLevels.map((lvl) => (
+                      {gymLevels.map((lvl) => {
+                        const Icon = lvl.icon;
+                        return (
                         <button
                           key={lvl.value}
                           type="button"
@@ -701,17 +709,17 @@ export default function AuthPage() {
                               : 'bg-slate-50 border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-white'
                           }`}
                         >
-                          <span className="text-lg">{lvl.emoji}</span>
+                          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: `${lvl.color}15` }}>
+                            <Icon className="w-4 h-4" style={{ color: lvl.color }} />
+                          </div>
                           <span>{lvl.label}</span>
                           {gymLevel === lvl.value && (
-                            <span className="ml-auto w-4 h-4 rounded-full bg-emerald-500 flex items-center justify-center">
-                              <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                              </svg>
+                            <span className="ml-auto w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center">
+                              <Check className="w-3 h-3 text-white" />
                             </span>
                           )}
                         </button>
-                      ))}
+                      )})}
                     </div>
                   </div>
 
@@ -746,28 +754,44 @@ export default function AuthPage() {
               {step === 3 && (
                 <div className="flex flex-col gap-4">
                   {/* Email notice card */}
-                  <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+                  <div className="rounded-xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-5">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="w-9 h-9 rounded-full bg-emerald-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">M31</div>
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 shadow-lg shadow-emerald-500/20">
+                        <Mail className="w-5 h-5" />
+                      </div>
                       <div>
-                        <div className="text-sm font-bold text-emerald-800">metal.sport.31</div>
-                        <div className="text-xs text-emerald-500">metal.sport@resend.dev</div>
+                        <div className="text-sm font-bold text-emerald-800 flex items-center gap-2">
+                          Metal Sport Gym
+                          <span className="text-[10px] font-normal text-emerald-400 bg-emerald-100 px-2 py-0.5 rounded-full">Official</span>
+                        </div>
+                        <div className="text-xs text-emerald-500">Verification Code</div>
                       </div>
                     </div>
-                    <div className="text-xs text-emerald-500 border-b border-emerald-200 py-2 mb-2">
-                      To: <span className="text-emerald-700 font-medium">{verifyEmail}</span>
+                    <div className="flex items-center gap-2 text-xs text-emerald-600 bg-emerald-100/50 rounded-lg px-3 py-2 mb-3">
+                      <Mail className="w-3.5 h-3.5 text-emerald-400" />
+                      <span className="text-emerald-400">To:</span>
+                      <span className="text-emerald-800 font-medium truncate">{verifyEmail}</span>
                     </div>
-                    <p className="text-sm text-emerald-700">
-                      <span className="text-base">{showCode ? '⚠️' : '✉️'}</span> {showCode
-                        ? "Email delivery unavailable. Use the code below:"
-                        : <>A 6-digit code has been sent to <strong>{verifyEmail}</strong>. Check your inbox (and spam folder).</>}
-                    </p>
+                    <div className="flex items-start gap-3">
+                      {showCode ? (
+                        <AlertTriangle className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
+                      ) : (
+                        <Mail className="w-5 h-5 text-emerald-500 mt-0.5 flex-shrink-0" />
+                      )}
+                      <p className="text-sm text-emerald-700">
+                        {showCode
+                          ? "Email delivery unavailable. Use the code below:"
+                          : <>A 6-digit code has been sent to <strong className="text-emerald-900">{verifyEmail}</strong>. Check your inbox (and spam folder).</>}
+                      </p>
+                    </div>
                     {showCode && (
-                      <div className="mt-3 text-center">
-                        <div className="inline-block text-3xl font-black tracking-[0.3em] text-emerald-700 bg-emerald-100 px-6 py-3 rounded-xl border border-emerald-300">
+                      <div className="mt-4 text-center">
+                        <div className="inline-block text-3xl font-black tracking-[0.3em] text-emerald-700 bg-gradient-to-br from-emerald-50 to-emerald-100 px-8 py-4 rounded-2xl border border-emerald-200 shadow-inner">
                           {showCode}
                         </div>
-                        <p className="text-[10px] text-emerald-400 mt-1">Code expires in 10 min</p>
+                        <p className="text-[10px] text-emerald-400 mt-2 flex items-center justify-center gap-1">
+                          <RefreshCw className="w-3 h-3" /> Code expires in 10 min
+                        </p>
                       </div>
                     )}
                   </div>

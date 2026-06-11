@@ -25,18 +25,34 @@ export async function POST(req: NextRequest) {
       await transporter.sendMail({
         from: `"Metal Sport Gym" <${process.env.SMTP_EMAIL}>`,
         to: email,
-        subject: 'Your verification code for metal.sport.31',
-        text: `Your verification code is: ${code}\n\nThis code expires in 10 minutes.`,
+        subject: 'Verify your Metal Sport account',
+        text: `Your verification code is: ${code}\n\nThis code expires in 10 minutes.\n\nMetal Sport Gym`,
         html: `
-          <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:24px;background:#f9f9f9;border-radius:12px;">
-            <div style="text-align:center;margin-bottom:20px;">
-              <div style="width:48px;height:48px;border-radius:50%;background:#059669;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:18px;">M31</div>
-              <h2 style="margin:8px 0 0;color:#1f2937;">metal.sport.31</h2>
+          <div style="font-family:'Inter',Arial,sans-serif;max-width:480px;margin:0 auto;background:#050f0a;border-radius:16px;overflow:hidden;border:1px solid rgba(0,212,170,0.15);">
+            <div style="background:linear-gradient(135deg,#00d4aa 0%,#0891b2 100%);padding:32px 24px;text-align:center;">
+              <div style="width:56px;height:56px;border-radius:16px;background:rgba(0,0,0,0.2);display:inline-flex;align-items:center;justify-content:center;margin-bottom:12px;border:1px solid rgba(255,255,255,0.15);">
+                <span style="font-size:24px;font-weight:900;color:#fff;letter-spacing:1px;">MS</span>
+              </div>
+              <h1 style="color:#fff;font-size:20px;font-weight:800;margin:0;letter-spacing:1px;text-transform:uppercase;">Metal Sport Gym</h1>
+              <p style="color:rgba(255,255,255,0.7);font-size:13px;margin:4px 0 0;">Verify your account</p>
             </div>
-            <div style="background:#fff;border-radius:8px;padding:24px;border:1px solid #e5e7eb;">
-              <p style="color:#4b5563;font-size:14px;margin:0 0 16px;">Use the code below to verify your account:</p>
-              <div style="text-align:center;font-size:36px;font-weight:900;letter-spacing:8px;color:#059669;padding:20px;background:#f0fdf4;border-radius:8px;">${code}</div>
-              <p style="color:#9ca3af;font-size:12px;margin:16px 0 0;">This code expires in 10 minutes.</p>
+            <div style="padding:28px 24px;background:#0a1812;">
+              <p style="color:rgba(255,255,255,0.6);font-size:14px;margin:0 0 20px;line-height:1.5;">
+                Use the code below to verify your account and start your journey.
+              </p>
+              <div style="text-align:center;font-size:38px;font-weight:900;letter-spacing:10px;color:#00d4aa;padding:22px;background:rgba(0,212,170,0.06);border-radius:12px;border:1px solid rgba(0,212,170,0.12);font-family:monospace;">
+                ${code}
+              </div>
+              <div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06);">
+                <p style="color:rgba(255,255,255,0.25);font-size:12px;margin:0;">
+                  <span style="color:rgba(0,212,170,0.5);">⏱</span> This code expires in <strong style="color:rgba(255,255,255,0.4);">10 minutes</strong>
+                </p>
+              </div>
+            </div>
+            <div style="padding:16px 24px;text-align:center;background:#050f0a;border-top:1px solid rgba(255,255,255,0.04);">
+              <p style="color:rgba(255,255,255,0.15);font-size:11px;margin:0;">
+                Metal Sport Gym — Built for those who push beyond limits.
+              </p>
             </div>
           </div>`,
       });
