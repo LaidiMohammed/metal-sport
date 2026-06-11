@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { MetalSportLogo } from '@/components/3d/MetalSportLogo';
 import { AnimatedProfileMenu } from '@/components/animated-profile-menu';
 import { useStore } from '@/lib/store';
@@ -43,20 +42,19 @@ export function Navbar() {
     >
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14">
-          <Link href="/" className="flex-shrink-0 flex items-center gap-2">
-            <Image src="/logo.png" alt="Metal Sport" width={24} height={24} className="w-6 h-6 rounded bg-accent" />
+          <Link href="/" className="flex-shrink-0 flex items-center">
             <MetalSportLogo variant="navbar" />
           </Link>
 
           {/* Desktop Nav */}
-          <div className="hidden lg:flex items-center h-full gap-0.5">
+          <div className="hidden lg:flex items-center h-full gap-1">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="relative flex items-center px-3 h-full"
+                  className="relative flex items-center px-4 h-full group"
                 >
                   <span
                     className={`relative z-10 text-[13px] font-medium tracking-wide uppercase transition-colors duration-200 ${
@@ -69,7 +67,7 @@ export function Navbar() {
                     <motion.span
                       layoutId="navbar-underline"
                       className="absolute bottom-0 left-3 right-3 h-[2px] bg-accent rounded-full"
-                      transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+                      transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                     />
                   )}
                 </Link>
