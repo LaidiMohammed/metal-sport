@@ -190,6 +190,21 @@ export default function WorkoutsPage() {
   const [editingExerciseIds, setEditingExerciseIds] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // ── Stats state (fetched from API) ───────────────────────────────────────
+  const [workoutStats, setWorkoutStats] = useState<any>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  const fetchStats = async () => {
+    if (!user?.id) return;
+    setStatsLoading(true);
+    try {
+      const res = await fetch(`/api/workouts/stats?userId=${user.id}`);
+      if (res.ok) setWorkoutStats(await res.json());
+    } catch {} finally { setStatsLoading(false); }
+  };
+
+  useEffect(() => { fetchStats(); }, [user?.id]);
+
   // ── Supabase sync ────────────────────────────────────────────────────────
   const fetchWorkouts = async () => {
     if (!user?.id) return;
@@ -910,7 +925,9 @@ export default function WorkoutsPage() {
           {activeTab === 3 && (
             <motion.div key="stats" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }} transition={{ duration: 0.3 }}>
               <h2 style={{ color: '#fff', fontSize: 22, fontWeight: 800, marginBottom: 24 }}>Your Progress</h2>
-
+              {statsLoading ? (
+                <p style={{ color: 'rgba(255,255,255,0.3)', textAlign: 'center', padding: 40 }}>Loading stats...</p>
+              ) : (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
                 {/* Personal Bests */}
                 <div style={{ padding: 24, borderRadius: 20, background: 'rgba(var(--card-rgb, 18,18,18), 0.5)', border: '1px solid var(--border)' }}>
@@ -918,20 +935,16 @@ export default function WorkoutsPage() {
                     <Award style={{ width: 20, height: 20, color: '#f59e0b' }} />
                     <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 16 }}>Personal Bests</h3>
                   </div>
-                  {[
-                    { label: 'Bench Press', value: '100 kg', trend: '+5 kg' },
-                    { label: 'Squat',        value: '140 kg', trend: '+10 kg' },
-                    { label: 'Deadlift',     value: '160 kg', trend: '+15 kg' },
-                    { label: 'Pull-ups',     value: '15 reps', trend: '+3 reps' },
-                  ].map((pb) => (
+                  {(workoutStats?.personalBests?.length ?? 0) > 0 ? workoutStats.personalBests.map((pb: any) => (
                     <div key={pb.label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                       <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>{pb.label}</span>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                         <span style={{ color: '#fff', fontWeight: 700, fontSize: 15 }}>{pb.value}</span>
-                        <span style={{ color: '#4ade80', fontSize: 12, fontWeight: 600 }}>↑ {pb.trend}</span>
                       </div>
                     </div>
-                  ))}
+                  )) : (
+                    <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13, textAlign: 'center', padding: '16px 0' }}>No personal records yet. Start logging!</p>
+                  )}
                 </div>
 
                 {/* Volume trend */}
@@ -940,21 +953,19 @@ export default function WorkoutsPage() {
                     <BarChart3 style={{ width: 20, height: 20, color: '#00d4aa' }} />
                     <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 16 }}>Weekly Volume</h3>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 120 }}>
-                    {[55, 80, 65, 90, 70, 45, 85].map((h, i) => (
-                      <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, height: '100%', justifyContent: 'flex-end' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 120, marginBottom: 4 }}>
+                    {(workoutStats?.weeklyVolume ?? [{ day: 'Mon', pct: 0 }, { day: 'Tue', pct: 0 }, { day: 'Wed', pct: 0 }, { day: 'Thu', pct: 0 }, { day: 'Fri', pct: 0 }, { day: 'Sat', pct: 0 }, { day: 'Sun', pct: 0 }]).map((d: any, i: number) => (
+                      <div key={d.day} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, height: '100%', justifyContent: 'flex-end' }}>
                         <motion.div
                           initial={{ height: 0 }}
-                          animate={{ height: `${h}%` }}
+                          animate={{ height: `${d.pct}%` }}
                           transition={{ delay: i * 0.06, duration: 0.6, ease: 'easeOut' }}
                           style={{
                             width: '100%', borderRadius: '4px 4px 0 0',
                             background: i === 6 ? 'linear-gradient(180deg, #00d4aa, #00b896)' : 'rgba(0,212,170,0.25)',
                           }}
                         />
-                        <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 10 }}>
-                          {['M','T','W','T','F','S','S'][i]}
-                        </span>
+                        <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 10 }}>{d.day.slice(0, 1)}</span>
                       </div>
                     ))}
                   </div>
@@ -968,9 +979,9 @@ export default function WorkoutsPage() {
                   </div>
                   <div style={{ textAlign: 'center', padding: '20px 0' }}>
                     <Flame style={{ width: 56, height: 56, color: '#f59e0b', margin: '0 auto 8px' }} />
-                    <p style={{ color: '#fff', fontSize: 42, fontWeight: 900, letterSpacing: '-0.03em' }}>5</p>
+                    <p style={{ color: '#fff', fontSize: 42, fontWeight: 900, letterSpacing: '-0.03em' }}>{workoutStats?.streak ?? 0}</p>
                     <p style={{ color: '#f59e0b', fontSize: 14, fontWeight: 600 }}>Day Streak</p>
-                    <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, marginTop: 8 }}>Best: 12 days</p>
+                    <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, marginTop: 8 }}>Best: {workoutStats?.bestStreak ?? 0} days</p>
                   </div>
                 </div>
 
@@ -980,13 +991,7 @@ export default function WorkoutsPage() {
                     <TrendingUp style={{ width: 20, height: 20, color: '#a855f7' }} />
                     <h3 style={{ color: '#fff', fontWeight: 700, fontSize: 16 }}>Muscle Focus</h3>
                   </div>
-                  {[
-                    { label: 'Chest',     pct: 75, color: '#00d4aa' },
-                    { label: 'Back',      pct: 60, color: '#3b82f6' },
-                    { label: 'Legs',      pct: 45, color: '#f59e0b' },
-                    { label: 'Shoulders', pct: 55, color: '#a855f7' },
-                    { label: 'Arms',      pct: 80, color: '#ef4444' },
-                  ].map((m) => (
+                  {(workoutStats?.muscleFocus?.length ?? 0) > 0 ? workoutStats.muscleFocus.map((m: any) => (
                     <div key={m.label} style={{ marginBottom: 12 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                         <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13 }}>{m.label}</span>
@@ -1001,9 +1006,12 @@ export default function WorkoutsPage() {
                         />
                       </div>
                     </div>
-                  ))}
+                  )) : (
+                    <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13, textAlign: 'center', padding: '16px 0' }}>No data yet. Complete some workouts!</p>
+                  )}
                 </div>
               </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
