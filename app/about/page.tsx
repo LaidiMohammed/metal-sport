@@ -21,7 +21,9 @@ const SHOWCASE = [
   { title: 'Énergie de Groupe', desc: 'HIIT, boxing, yoga — entraînez-vous avec une communauté qui alimente votre feu.', icon: Zap },
 ];
 
-const GYM_LINK = 'https://maps.app.goo.gl/Ag5tjnNmhYUga9NdA';
+const GYM_LINK = 'https://maps.app.goo.gl/jUjVCLHPxWgoxWjr6';
+const GYM_LAT = '35.6993197';
+const GYM_LNG = '-0.6195929';
 
 const FADE_UP = { initial: { opacity: 0, y: 40 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true } };
 
@@ -375,10 +377,10 @@ export default function AboutPage() {
               <iframe
                 key={mapMode}
                 src={mapMode === 'gym'
-                  ? 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3197.5!2d-0.6349!3d35.6958!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzXCsDQxJzQ0LjkiTiAwwrAzOCcwNS42Ilc!5e0!3m2!1sfr!2sdz!4v1'
+                  ? `https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d400!2d${GYM_LNG}!3d${GYM_LAT}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd7e8835936b2aa3%3A0xe606582e21d85c43!2sMetal+Sport+Boukli!5e0!3m2!1sfr!2sdz!4v1`
                   : mapMode === 'douches'
-                  ? 'https://www.google.com/maps/embed?pb=!1m16!1m12!1m3!1d3197.5!2d-0.6349!3d35.6958!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m7!3e0!4m0!4m4!2sHammams+et+douches+Boukli+Oran!3m3!2m2!1s0x0%3A0x0!2sHammam!5e0!3m2!1sfr!2sdz!4v1'
-                  : 'https://www.google.com/maps/embed?pb=!1m16!1m12!1m3!1d3197.5!2d-0.6349!3d35.6958!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m7!3e0!4m0!4m4!2sRestaurants+Boukli+Oran!3m3!2m2!1s0x0%3A0x0!2sRestaurants!5e0!3m2!1sfr!2sdz!4v1'
+                  ? `https://www.google.com/maps/embed?pb=!1m16!1m12!1m3!1d3000!2d${GYM_LNG}!3d${GYM_LAT}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m7!3e0!4m0!4m4!2sHammams+et+douches+proches+de+Boukli+Oran!3m3!2m2!1s0x0%3A0x0!2sHammam!5e0!3m2!1sfr!2sdz!4v1`
+                  : `https://www.google.com/maps/embed?pb=!1m16!1m12!1m3!1d3000!2d${GYM_LNG}!3d${GYM_LAT}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m7!3e0!4m0!4m4!2sRestaurants+proches+de+Boukli+Oran!3m3!2m2!1s0x0%3A0x0!2sRestaurants!5e0!3m2!1sfr!2sdz!4v1`
                 }
                 width="100%"
                 height="100%"
