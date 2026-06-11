@@ -5,8 +5,8 @@ import { Footer } from '@/components/footer';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { useRef } from 'react';
-import { Dumbbell, Timer, HeartHandshake, TrendingUp, ArrowRight, Sparkles, Shield, Users, Zap, MapPin, ShowerHead, UtensilsCrossed, ExternalLink } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { Dumbbell, Timer, HeartHandshake, TrendingUp, ArrowRight, Sparkles, Shield, Users, Zap, MapPin, ShowerHead, UtensilsCrossed } from 'lucide-react';
 
 const VALUES = [
   { icon: Dumbbell, title: 'Strength', desc: 'Build physical and mental resilience through proven training methods.', color: '#00d4aa' },
@@ -21,10 +21,10 @@ const SHOWCASE = [
   { title: 'Group Energy', desc: 'HIIT, boxing, yoga — train with a community that fuels your fire.', icon: Zap },
 ];
 
-const GYM_LAT = '36.7538';
-const GYM_LNG = '3.0588';
+const GYM_LINK = 'https://maps.app.goo.gl/Ag5tjnNmhYUga9NdA';
 
 export default function AboutPage() {
+  const [mapMode, setMapMode] = useState<'gym' | 'douches' | 'restaurants'>('gym');
   const heroRef = useRef<HTMLDivElement>(null);
   const missionRef = useRef<HTMLDivElement>(null);
   const valuesRef = useRef<HTMLDivElement>(null);
@@ -162,8 +162,12 @@ export default function AboutPage() {
               </motion.span>
               <br />we are a{' '}
               <motion.span
-                className="text-transparent bg-clip-text"
-                style={{ background: 'linear-gradient(135deg, #00d4aa, #22d3ee)' }}
+                className="inline-block"
+                style={{
+                  background: 'linear-gradient(135deg, #00d4aa, #22d3ee)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}
               >
                 community.
               </motion.span>
@@ -345,8 +349,15 @@ export default function AboutPage() {
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
+            <a href={GYM_LINK} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
             <iframe
-              src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3197.5!2d${GYM_LNG}!3d${GYM_LAT}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzbCsDQ1JzEzLjciTiAzwrAwMyczMS43IkU!5e0!3m2!1sfr!2sdz!4v1`}
+              key={mapMode}
+              src={mapMode === 'gym'
+                ? `https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3197.5!2d3.0588!3d36.7538!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzbCsDQ1JzEzLjciTiAzwrAwMyczMS43IkU!5e0!3m2!1sfr!2sdz!4v1`
+                : mapMode === 'douches'
+                ? `https://www.google.com/maps/embed?pb=!1m16!1m12!1m3!1d3197.5!2d3.0588!3d36.7538!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m7!3e0!4m0!4m4!2sdouches+publiques+proches+de+36.7538,3.0588!3m3!2m2!1s0x0%3A0x0!2sHammam+%26+Douches!5e0!3m2!1sfr!2sdz!4v1`
+                : `https://www.google.com/maps/embed?pb=!1m16!1m12!1m3!1d3197.5!2d3.0588!3d36.7538!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!4m7!3e0!4m0!4m4!2srestaurants+proches+de+36.7538,3.0588!3m3!2m2!1s0x0%3A0x0!2sRestaurants!5e0!3m2!1sfr!2sdz!4v1`
+              }
               width="100%"
               height="100%"
               style={{ border: 0, filter: 'invert(0.9) hue-rotate(160deg)' }}
@@ -355,53 +366,68 @@ export default function AboutPage() {
               referrerPolicy="no-referrer-when-downgrade"
               title="Metal Sport Gym Location"
             />
-            <div className="absolute bottom-4 left-4 right-4 flex items-center gap-3 bg-black/60 backdrop-blur-md rounded-xl px-5 py-3 border border-white/[0.06]">
+            </a>
+            <div className="absolute bottom-4 left-4 right-4 flex items-center gap-3 bg-black/60 backdrop-blur-md rounded-xl px-5 py-3 border border-white/[0.06] pointer-events-none">
               <MapPin className="w-5 h-5 text-[#00d4aa] flex-shrink-0" />
-              <span className="text-sm text-white/80">Metal Sport Gym — Alger Centre</span>
+              <span className="text-sm text-white/80">
+                {mapMode === 'gym' ? 'Metal Sport Gym — Alger Centre' : mapMode === 'douches' ? 'Douches à proximité' : 'Restaurants à proximité'}
+              </span>
             </div>
           </motion.div>
 
           {/* Amenities Buttons */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <motion.a
-              href={`https://www.google.com/maps/search/douches+publiques+proches+de+${GYM_LAT},${GYM_LNG}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-5 p-6 rounded-2xl border border-white/[0.06] bg-white/[0.02] hover:bg-[#00d4aa]/[0.04] hover:border-[#00d4aa]/20 transition-all duration-300 group"
+            <motion.button
+              onClick={() => setMapMode(mapMode === 'douches' ? 'gym' : 'douches')}
+              className={`flex items-center gap-5 p-6 rounded-2xl border transition-all duration-300 group text-left w-full ${
+                mapMode === 'douches'
+                  ? 'border-[#00d4aa]/30 bg-[#00d4aa]/[0.06]'
+                  : 'border-white/[0.06] bg-white/[0.02] hover:bg-[#00d4aa]/[0.04] hover:border-[#00d4aa]/20'
+              }`}
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <div className="w-14 h-14 rounded-xl bg-[#00d4aa]/10 flex items-center justify-center flex-shrink-0 group-hover:bg-[#00d4aa]/20 transition-colors">
+              <div className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
+                mapMode === 'douches' ? 'bg-[#00d4aa]/20' : 'bg-[#00d4aa]/10 group-hover:bg-[#00d4aa]/20'
+              }`}>
                 <ShowerHead className="w-7 h-7 text-[#00d4aa]" />
               </div>
               <div className="flex-1">
                 <h3 className="font-bold text-lg">Douches à Proximité</h3>
-                <p className="text-sm text-white/40">Trouver les douches publiques les plus proches de notre salle</p>
+                <p className="text-sm text-white/40">Afficher les douches et hammams autour de notre salle</p>
               </div>
-              <ExternalLink className="w-5 h-5 text-white/20 group-hover:text-[#00d4aa] transition-colors" />
-            </motion.a>
+              {mapMode === 'douches' && (
+                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-3 h-3 rounded-full bg-[#00d4aa]" />
+              )}
+            </motion.button>
 
-            <motion.a
-              href={`https://www.google.com/maps/search/restaurants+proches+de+${GYM_LAT},${GYM_LNG}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-5 p-6 rounded-2xl border border-white/[0.06] bg-white/[0.02] hover:bg-[#00d4aa]/[0.04] hover:border-[#00d4aa]/20 transition-all duration-300 group"
+            <motion.button
+              onClick={() => setMapMode(mapMode === 'restaurants' ? 'gym' : 'restaurants')}
+              className={`flex items-center gap-5 p-6 rounded-2xl border transition-all duration-300 group text-left w-full ${
+                mapMode === 'restaurants'
+                  ? 'border-[#00d4aa]/30 bg-[#00d4aa]/[0.06]'
+                  : 'border-white/[0.06] bg-white/[0.02] hover:bg-[#00d4aa]/[0.04] hover:border-[#00d4aa]/20'
+              }`}
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.1 }}
             >
-              <div className="w-14 h-14 rounded-xl bg-[#00d4aa]/10 flex items-center justify-center flex-shrink-0 group-hover:bg-[#00d4aa]/20 transition-colors">
+              <div className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
+                mapMode === 'restaurants' ? 'bg-[#00d4aa]/20' : 'bg-[#00d4aa]/10 group-hover:bg-[#00d4aa]/20'
+              }`}>
                 <UtensilsCrossed className="w-7 h-7 text-[#00d4aa]" />
               </div>
               <div className="flex-1">
                 <h3 className="font-bold text-lg">Restaurants à Proximité</h3>
                 <p className="text-sm text-white/40">Découvrir les restaurants et spécialités locales autour de nous</p>
               </div>
-              <ExternalLink className="w-5 h-5 text-white/20 group-hover:text-[#00d4aa] transition-colors" />
-            </motion.a>
+              {mapMode === 'restaurants' && (
+                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="w-3 h-3 rounded-full bg-[#00d4aa]" />
+              )}
+            </motion.button>
           </div>
         </div>
       </section>
