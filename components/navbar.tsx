@@ -25,12 +25,12 @@ export function Navbar() {
 
   const navLinks = [
     ...(user && user.role === 'admin' ? [{ href: '/admin', label: 'Admin' }] : []),
-    { href: '/about', label: 'About' },
     { href: '/exercises', label: 'Exercises' },
     { href: '/workouts', label: 'Workouts' },
     { href: '/shop', label: 'Shop' },
     { href: '/membership', label: 'Membership' },
     { href: '/coach', label: 'AI Coach' },
+    { href: '/about', label: 'About Us' },
   ];
 
   return (
