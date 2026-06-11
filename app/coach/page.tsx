@@ -145,7 +145,7 @@ export default function CoachPage() {
   };
 
   return (
-    <div className="h-screen bg-background flex flex-col overflow-hidden pt-14">
+    <div className="min-h-screen bg-background flex flex-col pt-14">
       <Navbar />
 
       {/* Hero banner */}

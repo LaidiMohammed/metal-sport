@@ -67,7 +67,7 @@ export function Navbar() {
                     <motion.span
                       layoutId="navbar-underline"
                       className="absolute bottom-0 left-3 right-3 h-[2px] bg-accent rounded-full"
-                      transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                      transition={{ type: 'spring', stiffness: 250, damping: 25 }}
                     />
                   )}
                 </Link>
