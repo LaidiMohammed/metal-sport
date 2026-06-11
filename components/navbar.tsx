@@ -56,7 +56,7 @@ export function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="relative flex items-center px-3 h-full group"
+                  className="relative flex items-center px-3 h-full"
                 >
                   <span
                     className={`relative z-10 text-[13px] font-medium tracking-wide uppercase transition-colors duration-200 ${
@@ -68,7 +68,7 @@ export function Navbar() {
                   {isActive && (
                     <motion.span
                       layoutId="navbar-underline"
-                      className="absolute inset-0 bg-accent/10 rounded-lg"
+                      className="absolute bottom-0 left-3 right-3 h-[2px] bg-accent rounded-full"
                       transition={{ type: 'spring', stiffness: 400, damping: 28 }}
                     />
                   )}
