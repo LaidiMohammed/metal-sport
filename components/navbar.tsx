@@ -1,8 +1,7 @@
 'use client';
 
-import Link from 'next/link';
 import Image from 'next/image';
-import { MetalSportLogo } from '@/components/3d/MetalSportLogo';
+import Link from 'next/link';
 import { AnimatedProfileMenu } from '@/components/animated-profile-menu';
 import { useStore } from '@/lib/store';
 import { usePathname } from 'next/navigation';
@@ -45,8 +44,7 @@ export function Navbar() {
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14">
           <Link href="/" className="flex-shrink-0 flex items-center gap-2">
-            <Image src="/images/logo.jpg" alt="Metal Sport" width={24} height={24} className="w-6 h-6 rounded bg-accent" />
-            <MetalSportLogo variant="navbar" />
+            <Image src="/images/logo.jpg" alt="Metal Sport" width={28} height={28} className="w-7 h-7 rounded-full bg-accent object-cover" />
           </Link>
 
           {/* Desktop Nav */}
