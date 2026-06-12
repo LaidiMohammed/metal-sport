@@ -58,9 +58,18 @@ export default function AboutPage() {
           animate={{ backgroundPosition: ['0% 0%', '100% 100%', '0% 0%'] }}
           transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
         />
-        <div className="absolute inset-0 opacity-[0.06]" style={{
-          backgroundImage: 'radial-gradient(circle at 20% 30%, #00d4aa 0%, transparent 50%), radial-gradient(circle at 80% 70%, #00d4aa 0%, transparent 50%)',
-        }} />
+        <motion.div
+          className="absolute inset-0 opacity-[0.06]"
+          animate={{
+            backgroundImage: [
+              'radial-gradient(circle at 20% 30%, #00d4aa 0%, transparent 50%), radial-gradient(circle at 80% 70%, #00d4aa 0%, transparent 50%)',
+              'radial-gradient(circle at 80% 30%, #00d4aa 0%, transparent 50%), radial-gradient(circle at 20% 70%, #00d4aa 0%, transparent 50%)',
+              'radial-gradient(circle at 50% 20%, #00d4aa 0%, transparent 50%), radial-gradient(circle at 50% 80%, #00d4aa 0%, transparent 50%)',
+              'radial-gradient(circle at 20% 30%, #00d4aa 0%, transparent 50%), radial-gradient(circle at 80% 70%, #00d4aa 0%, transparent 50%)',
+            ],
+          }}
+          transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+        />
         <motion.div
           className="absolute top-[15%] left-[10%] w-32 h-32 rounded-full border border-[#00d4aa]/10"
           animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.6, 0.3] }}
