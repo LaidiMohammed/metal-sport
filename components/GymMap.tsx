@@ -4,9 +4,6 @@ import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { MapPin, Loader2 } from 'lucide-react';
 
-const GYM_LAT = 35.6993197;
-const GYM_LNG = -0.6195929;
-
 interface POI {
   lat: number;
   lng: number;
@@ -28,23 +25,15 @@ export function GymMap({ mode }: { mode: 'gym' | 'douches' | 'restaurants' }) {
     if (mode === 'gym') { setPois([]); setCount(0); return; }
 
     setLoading(true);
-    const query = mode === 'douches'
-      ? `[out:json];(node["amenity"="hammam"](around:2000,${GYM_LAT},${GYM_LNG});node["shop"="hammam"](around:2000,${GYM_LAT},${GYM_LNG});node["amenity"~"bathhouse|sauna|public_bath"](around:2000,${GYM_LAT},${GYM_LNG}););out center 20;`
-      : `[out:json];(node["amenity"="restaurant"](around:2000,${GYM_LAT},${GYM_LNG});node["amenity"="fast_food"](around:2000,${GYM_LAT},${GYM_LNG}););out center 20;`;
-
-    fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`)
+    fetch(`/api/overpass?mode=${mode}`)
       .then(r => r.json())
       .then(data => {
-        const results: POI[] = (data.elements || []).map((el: any) => ({
-          lat: el.lat || el.center?.lat || GYM_LAT,
-          lng: el.lon || el.center?.lon || GYM_LNG,
-          name: el.tags?.name || el.tags?.['name:fr'] || el.tags?.amenity || (mode === 'douches' ? 'Hammam' : 'Restaurant'),
-        }));
-        setPois(results);
-        setCount(results.length);
+        if (data.error) { console.error('Overpass error:', data.error); setLoading(false); return; }
+        setPois(data.elements || []);
+        setCount(data.count || 0);
         setLoading(false);
       })
-      .catch(() => { setLoading(false); });
+      .catch((e) => { console.error('Fetch error:', e); setLoading(false); });
   }, [mode]);
 
   return (
