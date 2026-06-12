@@ -12,7 +12,7 @@ export function Footer() {
           {/* Brand */}
           <div className="col-span-1">
             <Link href="/" className="flex items-center gap-2 font-bold text-lg mb-4">
-              <Image src="/images/logo.jpg" alt="Metal Sport" width={24} height={24} className="w-6 h-6 rounded-full bg-accent" />
+              <Image src="/images/logo.jpg" alt="Metal Sport" width={28} height={28} className="w-7 h-7 rounded-full bg-accent object-cover" />
               <span className="text-foreground">Metal Sport Gym</span>
             </Link>
             <p className="text-sm text-foreground/60">

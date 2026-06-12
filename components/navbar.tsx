@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { MetalSportLogo } from '@/components/3d/MetalSportLogo';
 import { AnimatedProfileMenu } from '@/components/animated-profile-menu';
 import { useStore } from '@/lib/store';
 import { usePathname } from 'next/navigation';
@@ -45,6 +46,7 @@ export function Navbar() {
         <div className="flex items-center justify-between h-14">
           <Link href="/" className="flex-shrink-0 flex items-center gap-2">
             <Image src="/images/logo.jpg" alt="Metal Sport" width={28} height={28} className="w-7 h-7 rounded-full bg-accent object-cover" />
+            <MetalSportLogo variant="navbar" />
           </Link>
 
           {/* Desktop Nav */}
