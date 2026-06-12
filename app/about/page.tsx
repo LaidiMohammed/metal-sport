@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRef, useState } from 'react';
 import { Dumbbell, Timer, HeartHandshake, TrendingUp, ArrowRight, Sparkles, Shield, Users, Zap, MapPin, ShowerHead, UtensilsCrossed, Star, ChevronRight, Target, Brain, Activity } from 'lucide-react';
+import { GymMap } from '@/components/GymMap';
 
 const VALUES = [
   { icon: Dumbbell, title: 'Force', desc: 'Développez une résilience physique et mentale grâce à des méthodes éprouvées.', gradient: 'from-[#00d4aa] to-[#0891b2]' },
@@ -411,34 +412,7 @@ export default function AboutPage() {
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
-            <a href={GYM_LINK} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
-              <iframe
-                key={mapMode}
-                src={mapMode === 'gym'
-                  ? `https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d400!2d${GYM_LNG}!3d${GYM_LAT}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd7e8835936b2aa3%3A0xe606582e21d85c43!2sMetal+Sport+Boukli!5e0!3m2!1sfr!2sdz!4v1`
-                  : mapMode === 'douches'
-                  ? `https://maps.google.com/maps?q=Hammams+%26+douches+%C3%A0+proximit%C3%A9+Boukli+Oran&ll=${GYM_LAT},${GYM_LNG}&z=15&t=m&output=embed`
-                  : `https://maps.google.com/maps?q=Restaurants+%C3%A0+proximit%C3%A9+Boukli+Oran&ll=${GYM_LAT},${GYM_LNG}&z=15&t=m&output=embed`
-                }
-                width="100%"
-                height="100%"
-                style={{ border: 0, filter: 'invert(0.9) hue-rotate(160deg)' }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title="Metal Sport Boukli Oran"
-              />
-            </a>
-            <motion.div
-              className="absolute bottom-4 left-4 right-4 flex items-center gap-3 bg-black/70 backdrop-blur-md rounded-xl px-5 py-3 border border-white/[0.06]"
-              animate={{ y: [0, -2, 0] }}
-              transition={{ duration: 3, repeat: Infinity }}
-            >
-              <MapPin className="w-5 h-5 text-[#00d4aa] flex-shrink-0" />
-              <span className="text-sm text-white/80 font-medium">
-                {mapMode === 'gym' ? 'Metal Sport Boukli — Oran' : mapMode === 'douches' ? 'Douches & Hammams à proximité' : 'Restaurants à proximité'}
-              </span>
-            </motion.div>
+            <GymMap mode={mapMode} />
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
