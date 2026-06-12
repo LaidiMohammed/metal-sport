@@ -59,17 +59,46 @@ export default function AboutPage() {
           transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
         />
         <motion.div
-          className="absolute inset-0 opacity-[0.06]"
+          className="absolute inset-0 opacity-[0.07]"
           animate={{
-            backgroundImage: [
-              'radial-gradient(circle at 20% 30%, #00d4aa 0%, transparent 50%), radial-gradient(circle at 80% 70%, #00d4aa 0%, transparent 50%)',
-              'radial-gradient(circle at 80% 30%, #00d4aa 0%, transparent 50%), radial-gradient(circle at 20% 70%, #00d4aa 0%, transparent 50%)',
-              'radial-gradient(circle at 50% 20%, #00d4aa 0%, transparent 50%), radial-gradient(circle at 50% 80%, #00d4aa 0%, transparent 50%)',
-              'radial-gradient(circle at 20% 30%, #00d4aa 0%, transparent 50%), radial-gradient(circle at 80% 70%, #00d4aa 0%, transparent 50%)',
+            background: [
+              'radial-gradient(circle at 20% 30%, rgba(0,212,170,0.8) 0%, transparent 45%), radial-gradient(circle at 80% 70%, rgba(0,212,170,0.4) 0%, transparent 45%), radial-gradient(circle at 50% 50%, rgba(0,180,216,0.2) 0%, transparent 60%)',
+              'radial-gradient(circle at 80% 30%, rgba(0,212,170,0.8) 0%, transparent 45%), radial-gradient(circle at 20% 70%, rgba(0,212,170,0.4) 0%, transparent 45%), radial-gradient(circle at 50% 50%, rgba(0,180,216,0.2) 0%, transparent 60%)',
+              'radial-gradient(circle at 50% 20%, rgba(0,212,170,0.8) 0%, transparent 45%), radial-gradient(circle at 50% 80%, rgba(0,212,170,0.4) 0%, transparent 45%), radial-gradient(circle at 50% 50%, rgba(0,180,216,0.2) 0%, transparent 60%)',
+              'radial-gradient(circle at 20% 30%, rgba(0,212,170,0.8) 0%, transparent 45%), radial-gradient(circle at 80% 70%, rgba(0,212,170,0.4) 0%, transparent 45%), radial-gradient(circle at 50% 50%, rgba(0,180,216,0.2) 0%, transparent 60%)',
             ],
           }}
-          transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+          transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
         />
+        <motion.div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(0,212,170,0.3) 40px, rgba(0,212,170,0.3) 41px), repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(0,212,170,0.3) 40px, rgba(0,212,170,0.3) 41px)',
+          }}
+          animate={{ opacity: [0.02, 0.05, 0.02], rotate: [0, 1, 0, -1, 0] }}
+          transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        {[...Array(20)].map((_, i) => (
+          <motion.div
+            key={`particle-${i}`}
+            className="absolute w-1 h-1 rounded-full bg-[#00d4aa]"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+            }}
+            animate={{
+              opacity: [0, 0.8, 0],
+              scale: [0, 1.5, 0],
+              y: [0, -30 - Math.random() * 40],
+            }}
+            transition={{
+              duration: 2 + Math.random() * 3,
+              repeat: Infinity,
+              delay: Math.random() * 5,
+              ease: 'easeOut',
+            }}
+          />
+        ))}
         <motion.div
           className="absolute top-[15%] left-[10%] w-32 h-32 rounded-full border border-[#00d4aa]/10"
           animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.6, 0.3] }}
