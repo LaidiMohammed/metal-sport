@@ -417,8 +417,8 @@ export default function AboutPage() {
                 src={mapMode === 'gym'
                   ? `https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d400!2d${GYM_LNG}!3d${GYM_LAT}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd7e8835936b2aa3%3A0xe606582e21d85c43!2sMetal+Sport+Boukli!5e0!3m2!1sfr!2sdz!4v1`
                   : mapMode === 'douches'
-                  ? `https://maps.google.com/maps?q=Hammams+douches+Boukli+Oran&t=m&z=14&output=embed`
-                  : `https://maps.google.com/maps?q=Restaurants+Boukli+Oran&t=m&z=14&output=embed`
+                  ? `https://maps.google.com/maps?q=Hammams+%26+douches+%C3%A0+proximit%C3%A9+Boukli+Oran&ll=${GYM_LAT},${GYM_LNG}&z=15&t=m&output=embed`
+                  : `https://maps.google.com/maps?q=Restaurants+%C3%A0+proximit%C3%A9+Boukli+Oran&ll=${GYM_LAT},${GYM_LNG}&z=15&t=m&output=embed`
                 }
                 width="100%"
                 height="100%"
