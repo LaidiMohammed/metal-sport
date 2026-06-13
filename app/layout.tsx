@@ -31,6 +31,8 @@ export const metadata: Metadata = {
   },
 }
 
+import PageTransition from '@/components/PageTransition';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -39,7 +41,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark bg-background">
       <body className="font-sans antialiased bg-background text-foreground">
-        {children}
+        <PageTransition>{children}</PageTransition>
       </body>
     </html>
   )
