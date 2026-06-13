@@ -13,7 +13,7 @@ export default function PageTransition({ children }: { children: React.ReactNode
   const pathname = usePathname();
 
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence>
       <motion.div
         key={pathname}
         variants={variants}
@@ -21,6 +21,7 @@ export default function PageTransition({ children }: { children: React.ReactNode
         animate="animate"
         exit="exit"
         transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+        className="min-h-screen"
       >
         {children}
       </motion.div>
