@@ -36,7 +36,7 @@ export async function middleware(request: NextRequest) {
     "default-src 'self'",
     "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live",
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: blob: https://*.supabase.co https://*.tile.openstreetmap.org https://lh3.googleusercontent.com",
+    "img-src 'self' data: blob: https://*.supabase.co https://*.tile.openstreetmap.org https://lh3.googleusercontent.com https://placehold.co",
     "font-src 'self'",
     "connect-src 'self' https://*.supabase.co https://overpass-api.de https://api.stripe.com https://api.chargily.com",
     "frame-src 'self' https://*.stripe.com",
