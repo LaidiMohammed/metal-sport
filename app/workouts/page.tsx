@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useMemo, useEffect } from 'react';
+import { useState, useRef, useMemo, useEffect, ComponentType } from 'react';
 import { Navbar } from '@/components/navbar';
 import { InteractiveAnatomyViewer } from '@/components/interactive-anatomy-viewer';
 import { useAuthProtected } from '@/hooks/useAuthProtected';
@@ -49,7 +49,7 @@ interface ScheduledWorkout {
 }
 
 // ── Lucide icon map for plans ──────────────────────────────────────────────
-const PLAN_ICONS: Record<string, React.ComponentType<any>> = {
+const PLAN_ICONS: Record<string, ComponentType<any>> = {
   '1': Dumbbell, '2': Zap, '3': Activity, '4': Target, '5': TrendingUp, '6': Shield, 'List': List,
 };
 
@@ -189,6 +189,13 @@ export default function WorkoutsPage() {
   const [editingScheduleId, setEditingScheduleId] = useState<string | null>(null);
   const [editingExerciseIds, setEditingExerciseIds] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    if (selectedPlanId && !editingScheduleId) {
+      const plan = PLANS.find(p => p.id === selectedPlanId);
+      if (plan) setEditingExerciseIds(getExercisesForPlan(plan).map(e => e.id));
+    }
+  }, [selectedPlanId]);
 
   // ── Stats state (fetched from API) ───────────────────────────────────────
   const [workoutStats, setWorkoutStats] = useState<any>(null);
@@ -684,9 +691,6 @@ export default function WorkoutsPage() {
                         const plan = PLANS.find(p => p.id === selectedPlanId);
                         if (!plan) return null;
                         const matched = getExercisesForPlan(plan);
-                        if (!editingScheduleId && editingExerciseIds.length === 0) {
-                          setEditingExerciseIds(matched.map(e => e.id));
-                        }
                         const selectedExercises = editingExerciseIds.map(id => exercises.find(e => e.id === id)).filter(Boolean) as typeof exercises;
                         const searchFiltered = searchQuery ? exercises.filter(e =>
                           e.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
