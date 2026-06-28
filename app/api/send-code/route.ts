@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import { createToken } from '@/lib/verification-token';
+import { validateEmail, sanitizeString } from '@/lib/validation';
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -12,10 +13,10 @@ const transporter = nodemailer.createTransport({
 
 export async function POST(req: NextRequest) {
   try {
-    const { email } = await req.json();
-    if (!email) {
-      return NextResponse.json({ error: 'Missing email' }, { status: 400 });
-    }
+    const { email: rawEmail } = await req.json();
+    const email = sanitizeString(rawEmail || '');
+    const emailErr = validateEmail(email);
+    if (emailErr) return NextResponse.json({ error: emailErr }, { status: 400 });
 
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const token = createToken(email, code);

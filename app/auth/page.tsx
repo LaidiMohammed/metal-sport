@@ -84,6 +84,15 @@ export default function AuthPage() {
   const [showPass,    setShowPass]    = useState(false);
   const [captcha,     setCaptcha]     = useState(generateCaptcha);
   const [captchaVal,  setCaptchaVal]  = useState('');
+  const [pscore,      setPscore]      = useState(0);
+
+  const getPwdStrength = (p: string) => {
+    let s = 0;
+    if (p.length >= 8) s++; if (p.length >= 12) s++;
+    if (/[A-Z]/.test(p)) s++; if (/[a-z]/.test(p)) s++;
+    if (/[0-9]/.test(p)) s++; if (/[^A-Za-z0-9]/.test(p)) s++;
+    return s;
+  };
 
   // ── Step 2 fields ─────────────────────────────────────────────────────────
   const [age,         setAge]         = useState('');
@@ -105,6 +114,8 @@ export default function AuthPage() {
   const [loginPass,   setLoginPass]   = useState('');
   const [showLoginPass, setShowLoginPass] = useState(false);
   const [loading,     setLoading]     = useState(false);
+  const [loginAttempts, setLoginAttempts] = useState(0);
+  const [loginBlocked, setLoginBlocked] = useState(false);
   const [error,       setError]       = useState('');
 
   // ── Mascot quote cycling ──────────────────────────────────────────────────
@@ -155,7 +166,15 @@ export default function AuthPage() {
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
+    if (loginBlocked) { setError('Too many attempts. Try again later.'); return; }
     if (!loginEmail || !loginPass) { setError('Please fill in all fields'); return; }
+    const newAttempts = loginAttempts + 1;
+    setLoginAttempts(newAttempts);
+    if (newAttempts >= 5) {
+      setLoginBlocked(true);
+      setError('Too many failed attempts. Please wait 30 seconds.');
+      setTimeout(() => { setLoginBlocked(false); setLoginAttempts(0); }, 30000);
+    }
     await performLogin(loginEmail, loginPass);
   };
 
@@ -203,7 +222,9 @@ export default function AuthPage() {
     e.preventDefault();
     setError('');
     if (!firstName || !lastName || !email || !password) { setError('Please fill in all fields'); return; }
-    if (password.length < 6) { setError('Password must be at least 6 characters'); return; }
+    if (password.length < 8 || !/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password) || !/[^A-Za-z0-9]/.test(password)) {
+      setError('Password must be at least 8 characters with uppercase, lowercase, digit & special character'); return;
+    }
     if (captchaVal !== captcha.answer) { setError('Incorrect answer — try again'); setCaptchaVal(''); setCaptcha(generateCaptcha()); return; }
     setStep(2);
   };
@@ -397,14 +418,14 @@ export default function AuthPage() {
                   )}
                 </AnimatePresence>
 
-                <button type="submit" disabled={loading || sendingCode}
+                <button type="submit" disabled={loading || sendingCode || loginBlocked}
                   className="w-full h-11 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-sm transition-all duration-200 disabled:opacity-60 shadow-lg shadow-emerald-600/20 mt-1 flex items-center justify-center gap-2">
                   {sendingCode || loading ? (
                     <span className="flex items-center justify-center gap-2">
                       <Spinner size="sm" className="border-white/40 border-t-white" />
                       {sendingCode ? 'Sending code…' : 'Signing in…'}
                     </span>
-                  ) : 'Sign In'}
+                  ) : loginBlocked ? 'Try again later' : 'Sign In'}
                 </button>
               </form>
 
@@ -599,15 +620,31 @@ export default function AuthPage() {
                     <label htmlFor="reg-password" className={labelCls}>Password</label>
                     <div className="relative">
                       <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                      <input id="reg-password" type={showPass ? 'text' : 'password'}
-                        placeholder="Min. 6 characters" value={password}
-                        onChange={(e) => { setPassword(e.target.value); setError(''); }}
+                       <input id="reg-password" type={showPass ? 'text' : 'password'}
+                        placeholder="Min. 8 characters" value={password}
+                        onChange={(e) => { setPassword(e.target.value); setPscore(getPwdStrength(e.target.value)); setError(''); }}
                         required className={`${inputCls} pr-11`} />
                       <button type="button" onClick={() => setShowPass(!showPass)}
                         className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
                         {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
+                    {password && (
+                      <div className="mt-2">
+                        <div className="flex gap-1 mb-1">
+                          {[1,2,3,4,5,6].map((i) => (
+                            <div key={i} className={`h-1 flex-1 rounded-full transition-all duration-300 ${
+                              i <= pscore ? (pscore <= 2 ? 'bg-red-400' : pscore <= 4 ? 'bg-amber-400' : 'bg-emerald-400') : 'bg-slate-200'
+                            }`} />
+                          ))}
+                        </div>
+                        <p className={`text-[10px] font-medium ${
+                          pscore <= 2 ? 'text-red-400' : pscore <= 4 ? 'text-amber-400' : 'text-emerald-400'
+                        }`}>
+                          {pscore <= 2 ? 'Weak — add uppercase, digit & special char' : pscore <= 4 ? 'Medium' : 'Strong'}
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   {/* Captcha */}

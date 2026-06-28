@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-admin';
+import { sanitizeString, validateName, validateAge, validateHeight, validateWeight } from '@/lib/validation';
 
 export async function GET(req: Request) {
   try {
@@ -60,13 +61,22 @@ export async function PUT(req: Request) {
     }
 
     const body = await req.json();
+    const name = body.name !== undefined ? sanitizeString(body.name) : undefined;
+    const lastName = body.lastName !== undefined ? sanitizeString(body.lastName) : undefined;
+
+    if (name !== undefined) { const e = validateName(name, 'Name'); if (e) return NextResponse.json({ error: e }, { status: 400 }); }
+    if (lastName !== undefined && lastName) { const e = validateName(lastName, 'Last name'); if (e) return NextResponse.json({ error: e }, { status: 400 }); }
+    if (body.age !== undefined) { const e = validateAge(body.age); if (e) return NextResponse.json({ error: e }, { status: 400 }); }
+    if (body.height !== undefined) { const e = validateHeight(body.height); if (e) return NextResponse.json({ error: e }, { status: 400 }); }
+    if (body.weight !== undefined) { const e = validateWeight(body.weight); if (e) return NextResponse.json({ error: e }, { status: 400 }); }
+
     const updates: Record<string, any> = {};
-    if (body.name !== undefined) updates.name = body.name;
-    if (body.lastName !== undefined) updates.last_name = body.lastName;
+    if (name !== undefined) updates.name = name;
+    if (lastName !== undefined) updates.last_name = lastName;
     if (body.height !== undefined) updates.height = Number(body.height);
     if (body.weight !== undefined) updates.weight = Number(body.weight);
     if (body.age !== undefined) updates.age = Number(body.age);
-    if (body.sex !== undefined) updates.sex = body.sex;
+    if (body.sex !== undefined) updates.sex = ['male', 'female', 'other'].includes(body.sex) ? body.sex : 'other';
 
     const { data, error } = await supabaseAdmin
       .from('profiles')

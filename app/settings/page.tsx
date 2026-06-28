@@ -92,7 +92,9 @@ export default function SettingsPage() {
   };
 
   const changePassword = async () => {
-    if (!newPwd || newPwd.length < 6) { setPwdMsg('Minimum 6 characters'); return; }
+    if (!newPwd || newPwd.length < 8 || !/[A-Z]/.test(newPwd) || !/[a-z]/.test(newPwd) || !/[0-9]/.test(newPwd) || !/[^A-Za-z0-9]/.test(newPwd)) {
+      setPwdMsg('Minimum 8 characters with uppercase, lowercase, digit & special character'); return;
+    }
     setPwdSaving(true); setPwdMsg('');
     try {
       const { supabase } = await import('@/lib/supabase');
