@@ -33,11 +33,11 @@ export function AnimatedProfileMenu() {
     return null;
   }
 
-  const initials = user.name
+  const initials = (user.name || '?')
     .split(' ')
-    .map((n) => n[0])
+    .map((n) => n[0] || '')
     .join('')
-    .toUpperCase();
+    .toUpperCase() || '?';
 
   const handleLogout = () => {
     logout();

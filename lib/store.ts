@@ -264,7 +264,7 @@ export const useStore = create<UserStore>()(
     }),
     {
       name: 'kimo-gym-store',
-      version: 3,
+      version: 4,
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,
@@ -273,12 +273,15 @@ export const useStore = create<UserStore>()(
       }),
       migrate: (persisted: unknown, version: number) => {
         const state = persisted as Partial<UserStore>;
-        if (version < 3) {
+        if (version < 4) {
           return {
-            ...state,
+            user: null,
+            isAuthenticated: false,
+            workoutHistory: [],
+            cartItems: 0,
             products: [],
             allUsers: [],
-          };
+          } as UserStore;
         }
         return state as UserStore;
       },
