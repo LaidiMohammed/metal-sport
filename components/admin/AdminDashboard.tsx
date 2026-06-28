@@ -12,7 +12,7 @@ import {
   Search, Eye, EyeOff, AlertCircle, QrCode, LayoutDashboard,
   Users, TrendingUp, DollarSign, Shield, ChevronLeft, ChevronRight,
   Home, Briefcase, Star, Phone, Mail, Activity, UserCheck, Crown, Clock, Scan,
-  Menu, Trash2, Plus, X, UserPlus, Package,
+  Menu, Trash2, Plus, X, UserPlus, Package, Upload,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -1889,8 +1889,37 @@ function AddProductModal({ isOpen, onClose, editProduct }: { isOpen: boolean; on
             </select>
           </div>
           <div>
-            <label className="text-xs font-medium text-foreground/60 block mb-1">Image URLs (one per line)</label>
-            <textarea className="w-full px-3 py-2 rounded-lg text-sm bg-card border border-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-accent/40" rows={2} value={form.images} onChange={(e) => setForm({ ...form, images: e.target.value })} style={{ colorScheme: 'dark' }} />
+            <label className="text-xs font-medium text-foreground/60 block mb-1">Images</label>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {form.images.split('\n').filter(Boolean).map((url, i) => (
+                <div key={i} className="relative w-16 h-16 rounded-lg overflow-hidden border border-border group">
+                  <img src={url} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                  <button type="button" onClick={() => setForm({ ...form, images: form.images.split('\n').filter((_, j) => j !== i).join('\n') })} className="absolute top-0.5 right-0.5 w-5 h-5 bg-red-500/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><X className="w-3 h-3 text-white" /></button>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <label className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-accent/10 text-accent border border-accent/20 cursor-pointer hover:bg-accent/20 transition-colors">
+                <Upload className="w-4 h-4" />
+                Upload
+                <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const fd = new FormData();
+                  fd.append('file', file);
+                  try {
+                    const res = await fetch('/api/upload', { method: 'POST', body: fd });
+                    const data = await res.json();
+                    if (data.url) setForm({ ...form, images: form.images ? form.images + '\n' + data.url : data.url });
+                  } catch {}
+                  e.target.value = '';
+                }} />
+              </label>
+              <input type="text" placeholder="Ou colle une URL..." className="flex-1 px-3 py-2 rounded-lg text-sm bg-card border border-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-accent/40" value={form.images.split('\n').filter(Boolean).join('\n') ? '' : ''} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const val = (e.target as HTMLInputElement).value.trim(); if (val) setForm({ ...form, images: form.images ? form.images + '\n' + val : val }); (e.target as HTMLInputElement).value = ''; } }} style={{ colorScheme: 'dark' }} placeholder="Colle une URL et Enter" />
+            </div>
+            {form.images && (
+              <textarea className="w-full mt-2 px-3 py-2 rounded-lg text-xs bg-card border border-border text-foreground/60 focus:outline-none" rows={1} value={form.images} onChange={(e) => setForm({ ...form, images: e.target.value })} style={{ colorScheme: 'dark' }} />
+            )}
           </div>
           <div>
             <label className="text-xs font-medium text-foreground/60 block mb-1">Specifications (one per line)</label>
