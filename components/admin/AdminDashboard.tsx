@@ -1796,6 +1796,8 @@ function AddProductModal({ isOpen, onClose, editProduct }: { isOpen: boolean; on
     specs: '',
   });
   const [saving, setSaving] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+  const [urlInput, setUrlInput] = useState('');
 
   useEffect(() => {
     if (editProduct) {
@@ -1827,15 +1829,17 @@ function AddProductModal({ isOpen, onClose, editProduct }: { isOpen: boolean; on
       specs: form.specs.split('\n').filter(Boolean),
     };
     try {
+      let res;
       if (editProduct) {
-        await fetch(`/api/products/${editProduct.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        res = await fetch(`/api/products/${editProduct.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       } else {
-        await fetch('/api/products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        res = await fetch('/api/products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       }
+      if (!res.ok) { const e = await res.json(); throw new Error(e.error || 'Save failed'); }
       await fetchProducts();
-    } catch {}
-    setSaving(false);
-    onClose();
+      setSaving(false);
+      onClose();
+    } catch (err: any) { setUploadError(err.message); setSaving(false); return; }
   };
 
   if (!isOpen) return null;
@@ -1903,6 +1907,7 @@ function AddProductModal({ isOpen, onClose, editProduct }: { isOpen: boolean; on
                 <Upload className="w-4 h-4" />
                 Upload
                 <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                  setUploadError('');
                   const file = e.target.files?.[0];
                   if (!file) return;
                   const fd = new FormData();
@@ -1911,12 +1916,14 @@ function AddProductModal({ isOpen, onClose, editProduct }: { isOpen: boolean; on
                     const res = await fetch('/api/upload', { method: 'POST', body: fd });
                     const data = await res.json();
                     if (data.url) setForm({ ...form, images: form.images ? form.images + '\n' + data.url : data.url });
-                  } catch {}
+                    else setUploadError(data.error || 'Upload failed');
+                  } catch (err: any) { setUploadError(err?.message || 'Upload error'); }
                   e.target.value = '';
                 }} />
               </label>
-              <input type="text" placeholder="Ou colle une URL..." className="flex-1 px-3 py-2 rounded-lg text-sm bg-card border border-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-accent/40" value={form.images.split('\n').filter(Boolean).join('\n') ? '' : ''} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const val = (e.target as HTMLInputElement).value.trim(); if (val) setForm({ ...form, images: form.images ? form.images + '\n' + val : val }); (e.target as HTMLInputElement).value = ''; } }} style={{ colorScheme: 'dark' }} placeholder="Colle une URL et Enter" />
+              <input type="text" placeholder="Colle une URL + Enter" value={urlInput} onChange={(e) => setUrlInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); const val = urlInput.trim(); if (val) { setForm({ ...form, images: form.images ? form.images + '\n' + val : val }); setUrlInput(''); } } }} className="flex-1 px-3 py-2 rounded-lg text-sm bg-card border border-border text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-accent/40" style={{ colorScheme: 'dark' }} />
             </div>
+            {uploadError && <p className="text-xs text-red-400 mt-1">{uploadError}</p>}
             {form.images && (
               <textarea className="w-full mt-2 px-3 py-2 rounded-lg text-xs bg-card border border-border text-foreground/60 focus:outline-none" rows={1} value={form.images} onChange={(e) => setForm({ ...form, images: e.target.value })} style={{ colorScheme: 'dark' }} />
             )}
