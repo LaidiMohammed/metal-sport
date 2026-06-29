@@ -12,22 +12,28 @@ export default function AuthCallback() {
   useEffect(() => {
     supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
-        await fetch('/api/auth/callback', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: session.user.id,
-            email: session.user.email,
-            name: session.user.user_metadata?.full_name || session.user.email,
-          }),
-        });
+        try {
+          await fetch('/api/auth/callback', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId: session.user.id,
+              email: session.user.email,
+              name: session.user.user_metadata?.full_name || session.user.email,
+            }),
+          });
+        } catch {}
 
-        const res = await fetch('/api/profile', {
-          headers: { Authorization: `Bearer ${session.access_token}` },
-        });
-        const json = await res.json();
-        if (json.profile) setUser(json.profile);
-        router.push(json.profile?.role === 'admin' ? '/admin' : '/');
+        try {
+          const res = await fetch('/api/profile', {
+            headers: { Authorization: `Bearer ${session.access_token}` },
+          });
+          const json = await res.json();
+          if (json.profile) setUser(json.profile);
+          router.push(json.profile?.role === 'admin' ? '/admin' : '/');
+          return;
+        } catch {}
+        router.push('/');
       }
     });
   }, [router, setUser]);
