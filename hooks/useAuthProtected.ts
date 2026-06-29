@@ -15,20 +15,21 @@ export function useAuthProtected() {
     const checkAuth = async () => {
       if (isAuthenticated && user) return;
 
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        const res = await fetch('/api/profile', {
-          headers: { Authorization: `Bearer ${session.access_token}` },
-        });
-        if (res.ok) {
-          const json = await res.json();
-          if (json.profile) {
-            setUser(json.profile);
-            return;
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          const res = await fetch('/api/profile', {
+            headers: { Authorization: `Bearer ${session.access_token}` },
+          });
+          if (res.ok) {
+            const json = await res.json();
+            if (json.profile) {
+              setUser(json.profile);
+              return;
+            }
           }
         }
-      }
-
+      } catch {} 
       router.push('/auth');
     };
 
