@@ -4,8 +4,16 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useStore } from '@/lib/store';
-import { supabase } from '@/lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
+
+let _supabase: any;
+async function getSupabase() {
+  if (!_supabase) {
+    const mod = await import('@/lib/supabase');
+    _supabase = mod.supabase;
+  }
+  return _supabase;
+}
 import {
   Mail,
   Lock,
@@ -58,6 +66,7 @@ function GoogleIcon() {
 }
 
 async function fetchProfileViaApi() {
+  const supabase = await getSupabase();
   const { data: { session } } = await supabase.auth.getSession();
   if (!session?.access_token) return null;
   const res = await fetch('/api/profile', {
@@ -127,28 +136,34 @@ export default function AuthPage() {
 
   // ── Supabase Auth session listener ───────────────────────────────────────
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        const profile = await fetchProfileViaApi();
-        if (profile) setUser(profile);
-      } else {
-        setUser(null);
-      }
-    });
-    // Check existing session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) {
-        const profile = await fetchProfileViaApi();
-        if (profile) setUser(profile);
-      }
-    });
-    return () => subscription.unsubscribe();
+    let subscription: any;
+    (async () => {
+      const supabase = await getSupabase();
+      const r = supabase.auth.onAuthStateChange(async (event: string, session: any) => {
+        if (session?.user) {
+          const profile = await fetchProfileViaApi();
+          if (profile) setUser(profile);
+        } else {
+          setUser(null);
+        }
+      });
+      subscription = r.data.subscription;
+      // Check existing session
+      supabase.auth.getSession().then(async ({ data: { session } }: any) => {
+        if (session?.user) {
+          const profile = await fetchProfileViaApi();
+          if (profile) setUser(profile);
+        }
+      });
+    })();
+    return () => { if (subscription) subscription.unsubscribe(); };
   }, [setUser]);
 
   // ── Auth logic ────────────────────────────────────────────────────────────
   const performLogin = async (loginEmailAddr: string, password: string) => {
     setLoading(true);
     try {
+      const supabase = await getSupabase();
       const { data, error } = await supabase.auth.signInWithPassword({ email: loginEmailAddr, password });
       if (error) throw error;
       if (data.user) {
@@ -363,6 +378,7 @@ export default function AuthPage() {
               <button
                 type="button"
                 onClick={async () => {
+                  const supabase = await getSupabase();
                   await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + '/auth/callback' } });
                 }}
                 disabled={loading}

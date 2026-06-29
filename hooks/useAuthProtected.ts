@@ -3,7 +3,6 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useStore } from '@/lib/store';
-import { supabase } from '@/lib/supabase';
 
 export function useAuthProtected() {
   const router = useRouter();
@@ -16,6 +15,7 @@ export function useAuthProtected() {
       if (isAuthenticated && user) return;
 
       try {
+        const { supabase } = await import('@/lib/supabase');
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
           const res = await fetch('/api/profile', {

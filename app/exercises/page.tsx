@@ -3,13 +3,18 @@
 import { Navbar } from '@/components/navbar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { InteractiveAnatomyViewer } from '@/components/interactive-anatomy-viewer';
+import dynamic from 'next/dynamic';
 import { exercises } from '@/lib/exercises-data';
 import type { Exercise } from '@/lib/exercises-data';
 import { CATEGORY_COLORS, getSubGroups, CATEGORIES as MUSCLE_CATEGORIES } from '@/lib/muscle-mapping';
 import { useAuthProtected } from '@/hooks/useAuthProtected';
 import { useState, useMemo, useRef } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
+
+const InteractiveAnatomyViewer = dynamic(
+  () => import('@/components/interactive-anatomy-viewer').then(mod => ({ default: mod.InteractiveAnatomyViewer })),
+  { ssr: false, loading: () => <div className="w-full h-[420px] sm:h-[520px] rounded-2xl bg-gradient-to-b from-[#06060e] to-[#020206] border border-white/[0.06] flex items-center justify-center text-white/30 text-sm">Loading 3D viewer...</div> }
+);
 import { Search, Trophy, Flame, Target, Sparkles, ChevronLeft, ChevronRight, X, Star, TrendingUp, Cable, Dumbbell, LayoutGrid } from 'lucide-react';
 
 const ITEMS_PER_PAGE = 12;

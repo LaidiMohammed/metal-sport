@@ -1,9 +1,14 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useState, useRef, useMemo, useEffect, ComponentType } from 'react';
 import { Navbar } from '@/components/navbar';
-import { InteractiveAnatomyViewer } from '@/components/interactive-anatomy-viewer';
 import { useAuthProtected } from '@/hooks/useAuthProtected';
+
+const InteractiveAnatomyViewer = dynamic(
+  () => import('@/components/interactive-anatomy-viewer').then(mod => ({ default: mod.InteractiveAnatomyViewer })),
+  { ssr: false, loading: () => <div className="w-full h-[420px] sm:h-[520px] rounded-2xl bg-gradient-to-b from-[#06060e] to-[#020206] border border-white/[0.06] flex items-center justify-center text-white/30 text-sm">Loading 3D viewer...</div> }
+);
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import {
   Dumbbell, Clock, Flame, Target, Plus, Trash2, Play, Pencil,
